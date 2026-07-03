@@ -6,7 +6,6 @@
     <title>Finez Honam - 통합 답사 관리 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 무료 오픈소스 지도 라이브러리 (Leaflet) 연동 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -226,7 +225,6 @@
                         </div>
                         <div class="grid grid-cols-1 gap-2.5 text-left">
                             
-                            <!-- [신규 기능] 낙안읍성 전용 황금 고블린 포획 버튼 -->
                             <button id="branch-goblin-btn" onclick="goToGoblinSection()" class="hidden w-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white font-extrabold py-3.5 rounded-xl text-xs flex justify-between items-center shadow-md transition-finez treasure-glow mb-1">
                                 <div class="flex items-center space-x-2"><span class="text-lg animate-bounce">👺</span> <span>황금 고블린 '점수를 잡아라!'</span></div> <span class="font-black border border-white/40 px-2 py-0.5 rounded">태그하기 →</span>
                             </button>
@@ -240,7 +238,7 @@
                         </div>
                     </div>
 
-                    <!-- [신규 구역] 황금 고블린 NFC 태그 대기 화면 -->
+                    <!-- 황금 고블린 NFC 태그 대기 화면 -->
                     <div id="modal-goblin-section" class="hidden text-center py-6 px-2 space-y-6">
                         <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">👺</div>
                         <div class="space-y-2">
@@ -449,7 +447,6 @@
             const st2 = document.getElementById("admin-mock-location-toggle");
             if(st2) st2.checked = isMocked;
 
-            // [신규] 고블린 태그 이벤트 감지 시 최우선 화면 전환
             if (goblinCode) {
                 processGoblinTag(goblinCode);
                 return; 
@@ -459,8 +456,6 @@
                 isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
             } else if (token && usersDB[token]) {
                 isAdmin = false; currentToken = token; currentUser = usersDB[token];
-                
-                // [신규] 고블린 탭 전환 시 자신이 누구인지 기억하게 만드는 세션 저장
                 localStorage.setItem("active_user_token", token); 
                 
                 if (!currentUser.isConfigured) {
@@ -470,7 +465,7 @@
             } else { hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); }
         }
 
-        // [신규] 고블린 NFC 태그 처리 로직
+        // [핵심] 고블린 태그 및 상세 점수 기록 로직
         function processGoblinTag(code) {
             hideAllScreens();
             document.getElementById("goblin-result-screen").classList.remove("hidden");
@@ -487,7 +482,6 @@
             currentUser = usersDB[activeToken];
             currentToken = activeToken;
 
-            // 중복 태그 방지 처리 (이미 잡은 고블린 방어)
             if(currentUser.photoVerified["goblin_" + code]) {
                 document.getElementById("goblin-title").innerText = "이미 잡은 고블린!";
                 document.getElementById("goblin-desc").innerText = "이 고블린은 이미 포획되었습니다.";
@@ -498,18 +492,18 @@
 
             let pts = 0; let title = ""; let colorClass = ""; let icon = "👺";
             
-            // 점수 및 상태 분기 (추후 마음대로 확장 가능)
             if (code === 'plus50') { pts = 50; title = "황금 보따리 획득!"; colorClass = "text-emerald-400"; icon="🎉"; }
             else if (code === 'minus30') { pts = -30; title = "앗! 고블린의 함정!"; colorClass = "text-rose-500"; icon="💣"; }
             else if (code === 'plus100') { pts = 100; title = "전설의 고블린 포획!"; colorClass = "text-amber-400"; icon="👑"; }
             else { pts = 10; title = "소소한 동전 줍줍!"; colorClass = "text-blue-400"; icon="🪙"; }
 
             currentUser.score += pts;
-            currentUser.photoVerified["goblin_" + code] = true;
+            // [버그 수정 완료] 영수증에 띄우기 위해 구체적인 명칭과 포인트값을 객체로 저장합니다!
+            currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
+            
             usersDB[currentToken] = currentUser;
             localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
 
-            // 결과창 UI 업데이트
             document.getElementById("goblin-result-icon").innerText = icon;
             document.getElementById("goblin-title").innerText = title;
             document.getElementById("goblin-desc").innerText = `${currentUser.team}의 점수가 변동되었습니다!`;
@@ -680,7 +674,6 @@
             });
         }
 
-        // [수정] 모달 섹션 제어
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -700,7 +693,6 @@
             document.getElementById("modal-gacha-section").classList.add("hidden");
             document.getElementById("modal-goblin-section").classList.add("hidden");
 
-            // [신규] 오직 낙안읍성(course_06)에서만 황금 고블린 버튼 표시
             if (currentBaseCourseId === "course_06") {
                 document.getElementById("branch-goblin-btn").classList.remove("hidden");
             } else {
@@ -1019,6 +1011,7 @@
         let activeAccordionToken = null;
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
 
+        // [핵심 업데이트] 고블린 태그 시 리더보드 상세 내역에 영수증 표기 로직 추가
         function renderLeaderboard() {
             const listContainer = document.getElementById("leaderboard-list"); if (!listContainer) return;
             listContainer.innerHTML = ""; let sortedUsers = Object.keys(usersDB).map(k => ({token: k, ...usersDB[k]})).sort((a, b) => b.score - a.score);
@@ -1032,15 +1025,42 @@
                 
                 const isMe = currentUser && user.token === currentToken; const isExpanded = activeAccordionToken === user.token;
                 let receiptHTML = "";
+                
                 if (isExpanded) {
                     let baseInfoHTML = `<div><p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">👥 조원 명단 정보</p><p class="text-xs text-slate-700 font-medium mt-0.5 leading-relaxed">${user.members || '미등록'}</p></div>`;
                     let detailScoreHTML = "";
                     if (isMe) {
+                        let photoReceipts = "";
+                        
+                        // [신규] 고블린 태그 기록 및 보물상자 기록 합산 렌더링
+                        if(user.photoVerified) { 
+                            Object.keys(user.photoVerified).forEach(cId => { 
+                                if(cId.endsWith("_report_done")) return; 
+                                
+                                // 고블린 이벤트 영수증 처리 (빨간색/초록색 분기)
+                                if(cId.startsWith("goblin_")) {
+                                    const gInfo = user.photoVerified[cId];
+                                    if(gInfo && typeof gInfo === 'object') {
+                                        let ptsText = gInfo.points > 0 ? `+${gInfo.points}P` : `${gInfo.points}P`;
+                                        let colorClass = gInfo.points > 0 ? "text-emerald-600" : "text-rose-600";
+                                        photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>👺 이벤트: ${gInfo.title}</span><span class="font-mono ${colorClass} font-bold">${ptsText}</span></div>`;
+                                    } else if (gInfo === true) {
+                                        photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>👺 이벤트: 고블린 조우</span><span class="font-mono text-slate-500 font-bold">기록없음</span></div>`;
+                                    }
+                                    return;
+                                }
+
+                                // 일반 보물상자 영수증 처리
+                                const cInfo = coursesDB[cId]; const gInfo = user.photoVerified[cId]; 
+                                if(cInfo && gInfo && gInfo.points !== undefined) photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>🎁 상자: ${cInfo.name}</span><span class="font-mono text-amber-600 font-bold">+${gInfo.points}P</span></div>`; 
+                            }); 
+                        }
+
                         let quizReceipts = "";
                         user.solved.forEach(qId => { const quiz = quizzesDB.find(q => q.id === qId); if(quiz) { const course = coursesDB[quiz.course]; quizReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'} (${quiz.step}단계)</span><span class="font-mono text-emerald-600 font-bold">+${quiz.points}P</span></div>`; } });
-                        let photoReceipts = "";
-                        if(user.photoVerified) { Object.keys(user.photoVerified).forEach(cId => { if(cId.endsWith("_report_done")) return; const cInfo = coursesDB[cId]; const gInfo = user.photoVerified[cId]; if(cInfo && gInfo) photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>🎁 상자: ${cInfo.name}</span><span class="font-mono text-amber-600 font-bold">+${gInfo.points}P</span></div>`; }); }
-                        let totalReceipts = quizReceipts + photoReceipts; if(!totalReceipts) totalReceipts = `<div class="text-[11px] text-slate-400 italic py-1">아직 스코어 기록이 없습니다.</div>`;
+                        
+                        let totalReceipts = quizReceipts + photoReceipts; 
+                        if(!totalReceipts) totalReceipts = `<div class="text-[11px] text-slate-400 italic py-1">아직 스코어 기록이 없습니다.</div>`;
                         detailScoreHTML = `<div class="pt-2 border-t border-slate-200/60 mt-1.5"><p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">🎯 우리조 포인트 획득 세부 출처</p><div class="mt-1 divide-y divide-slate-100/50">${totalReceipts}</div></div>`;
                     }
                     receiptHTML = `<div class="mt-2.5 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-xl space-y-2 animate-fade-in">${baseInfoHTML} ${detailScoreHTML}</div>`;
