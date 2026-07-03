@@ -114,7 +114,6 @@
                 <div class="flex items-center space-x-2">
                     <div class="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">F</span></div>
                     <div>
-                        <!-- [추가] 학생 로그아웃 버튼 -->
                         <div class="flex items-center space-x-2">
                             <h2 class="font-bold text-slate-900 text-sm tracking-tight" id="user-info-text">1조</h2>
                             <button onclick="logout()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-200 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm transition-finez">로그아웃</button>
@@ -159,7 +158,6 @@
                     <div class="flex items-center space-x-2">
                         <div class="w-6 h-6 bg-red-500 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">A</span></div>
                         <div>
-                            <!-- [추가] 관리자 로그아웃 버튼 -->
                             <div class="flex items-center space-x-2">
                                 <h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2>
                                 <button onclick="logout()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm transition-finez">로그아웃</button>
@@ -323,7 +321,7 @@
 
     <script>
         // -------------------------------------------------------------
-        // Firebase 구성 및 초기화
+        // 1. Firebase 구성 및 초기화
         // -------------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyD5lqY2NqitjHTnJOnsgxX_yzNOIuMw5t8",
@@ -339,7 +337,7 @@
         const db = firebase.database();
 
         // -------------------------------------------------------------
-        // 기본 데이터 설정
+        // 2. 기본 데이터 구조 설정
         // -------------------------------------------------------------
         const coursesDB = {
             "course_01": { name: "남원 유곡리와 두락리 고분군", lat: 35.507804, lng: 127.620780, day: 1 },
@@ -426,9 +424,10 @@
         let isDbLoaded = false;
 
         // -------------------------------------------------------------
-        // Firebase 리스너 및 데이터 동기화 함수
+        // 3. Firebase 데이터 동기화 함수
         // -------------------------------------------------------------
         function initData() {
+            // [오류 수정 방어막] 파이어베이스 권한 거부 시 무한 로딩을 막기 위한 에러 캐치 추가
             db.ref('usersDB').on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     usersDB = snapshot.val();
@@ -442,13 +441,14 @@
                         if (u.score === undefined) u.score = 0;
                     });
                 } else {
-                    usersDB = {...defaultUsersDB};
+                    // 깊은 복사(Deep Copy)를 통해 원본 데이터 오염 방지
+                    usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
                     db.ref('usersDB').set(usersDB);
                 }
                 
                 if (!isDbLoaded) {
                     isDbLoaded = true;
-                    checkAuthentication();
+                    checkAuthentication(); // 최초 1회만 로그인 검증 실행
                 } else {
                     if (isAdmin) {
                         renderAdminDashboard();
@@ -459,6 +459,10 @@
                     }
                     renderLeaderboard();
                 }
+            }, (error) => {
+                console.error("Firebase 에러: ", error);
+                alert("데이터베이스 권한 오류!\n파이어베이스 설정에서 [Realtime Database -> 보안 규칙]이 '.read': true, '.write': true 인지 꼭 확인해 주세요!");
+                document.getElementById("loading-title").innerText = "데이터 접근 거부됨 (설정 확인 필요)";
             });
 
             db.ref('gps_verified_quizzes').on('value', (snapshot) => {
@@ -487,23 +491,19 @@
         function syncLocationSimulatorState(checked) { db.ref('global_mock_location').set(checked); }
 
         // -------------------------------------------------------------
-        // [핵심] 로그인 / 세션 유지 / 로그아웃 로직
+        // 4. 로그인 / 세션 유지(30분) / 로그아웃 제어
         // -------------------------------------------------------------
         
-        // 로그아웃 (세션 삭제)
         function logout() {
             if(confirm("정말 로그아웃 하시겠습니까?")) {
                 localStorage.removeItem("active_user_token");
                 localStorage.removeItem("login_timestamp");
                 isAdmin = false; currentUser = null; currentToken = "";
-                // 파라미터 없이 깨끗한 주소로 메인화면 복귀
                 window.location.href = window.location.pathname; 
             }
         }
 
-        // 로그인 처리 시 시간 기억
         function handleInAppAuth(token) {
-            // 로그인 세션 및 현재 시간 저장 (30분 유효)
             localStorage.setItem("active_user_token", token);
             localStorage.setItem("login_timestamp", Date.now());
 
@@ -520,35 +520,37 @@
             } else { 
                 alert("등록되지 않은 카드입니다."); 
                 localStorage.removeItem("active_user_token");
+                localStorage.removeItem("login_timestamp");
                 hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
             }
         }
 
-        // 페이지 진입 시 세션 확인
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
             const tokenUrl = urlParams.get('token');
             const goblinCode = urlParams.get('goblin');
 
-            // 1. 고블린 태그 검사 (URL 우선)
+            // URL 찌꺼기 즉시 청소 (새로고침 대비)
+            if (tokenUrl || goblinCode) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             if (goblinCode) { 
-                window.history.replaceState({}, document.title, window.location.pathname); // URL 찌꺼기 지우기
                 processGoblinTag(goblinCode); 
                 return; 
             }
 
             let token = tokenUrl;
             
-            // 2. URL에 토큰이 없다면 스마트폰 내부 기억장치(세션) 확인
             if (!token) {
                 const savedToken = localStorage.getItem("active_user_token");
                 const savedTime = localStorage.getItem("login_timestamp");
                 
                 if (savedToken && savedTime) {
                     const elapsed = Date.now() - Number(savedTime);
-                    if (elapsed < 30 * 60 * 1000) { // 30분(1800000ms) 이내라면 로그인 인정!
+                    if (elapsed < 30 * 60 * 1000) { // 30분 유효기간
                         token = savedToken;
-                    } else { // 30분이 지났다면 강제 로그아웃
+                    } else {
                         localStorage.removeItem("active_user_token");
                         localStorage.removeItem("login_timestamp");
                         alert("로그인 세션(30분)이 만료되었습니다. 카드를 다시 태그해 주세요.");
@@ -556,9 +558,7 @@
                 }
             }
 
-            // 3. 최종 확인된 토큰으로 시스템 진입
             if (token) { 
-                if(tokenUrl) window.history.replaceState({}, document.title, window.location.pathname); // 새로고침 대비 URL 지우기
                 handleInAppAuth(token); 
             } else { 
                 hideAllScreens(); 
@@ -567,7 +567,7 @@
         }
 
         // -------------------------------------------------------------
-        // 고블린 처리 및 하이브리드 스캐너
+        // 5. 고블린 및 하이브리드 스캐너 (안드로이드/아이폰 분기)
         // -------------------------------------------------------------
         async function activateNfcReaderSession() {
             const spinner = document.getElementById("nfc-spinner");
@@ -584,15 +584,17 @@
                     ndef.addEventListener("reading", ({ message }) => {
                         for (const record of message.records) {
                             if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
-                                const textDecoder = new TextDecoder(record.encoding || "utf-8");
-                                let urlData = textDecoder.decode(record.data);
+                                // [오류 수정] NFC 내부 찌꺼기 문자(null bytes 등) 클렌징 추가
+                                let urlData = new TextDecoder(record.encoding || "utf-8").decode(record.data);
+                                urlData = urlData.replace(/\0/g, ''); 
+
                                 try {
                                     let urlObj = new URL(urlData);
                                     let token = urlObj.searchParams.get('token');
                                     let goblin = urlObj.searchParams.get('goblin');
                                     
                                     if (goblin) { processGoblinTag(goblin); } else if (token) { handleInAppAuth(token); }
-                                } catch(e) { console.error("URL 파싱 에러", e); }
+                                } catch(e) { console.error("URL 파싱 에러 (안드로이드):", e); }
                             }
                         }
                     });
@@ -652,13 +654,14 @@
             document.getElementById("goblin-score-box").className = `bg-slate-800 rounded-3xl p-8 border-2 shadow-2xl relative overflow-hidden ${pts > 0 ? 'border-emerald-500/50' : 'border-rose-500/50'}`;
         }
 
-        // 고블린 완료 후 파라미터 없이 깔끔하게 돌아가기
+        // [오류 수정] 고블린 종료 시 새로고침 깜빡임 현상 제거
         function closeGoblinScreen() {
-            window.location.href = window.location.pathname; 
+            document.getElementById("goblin-result-screen").classList.add("hidden");
+            checkAuthentication(); // 현재 세션을 확인하여 화면을 스무스하게 연결
         }
 
         // -------------------------------------------------------------
-        // 화면 제어 및 초기화
+        // 화면 초기화 및 기타 제어
         // -------------------------------------------------------------
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
@@ -689,7 +692,7 @@
 
         function clearAllData() {
             if(confirm("모든 조의 점수, 인증샷, 진행 내역을 완전히 초기화하시겠습니까?")) {
-                usersDB = {...defaultUsersDB};
+                usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
                 db.ref('usersDB').set(usersDB);
                 db.ref('gps_verified_quizzes').set({});
                 db.ref('global_mock_location').set(false);
@@ -697,9 +700,6 @@
             }
         }
 
-        // -------------------------------------------------------------
-        // 관리자 대시보드
-        // -------------------------------------------------------------
         function renderAdminDashboard() {
             const teamCardContainer = document.getElementById("admin-team-cards"); teamCardContainer.innerHTML = "";
             Object.keys(usersDB).forEach(token => {
@@ -766,7 +766,7 @@
         function adjustAdminScore(token, amount) { usersDB[token].score += amount; saveAndSync(); }
 
         // -------------------------------------------------------------
-        // 학생 대시보드 렌더링
+        // 학생 미션 제어부
         // -------------------------------------------------------------
         function switchTab(tab) {
             const qBtn = document.getElementById("tab-quiz-btn"), rBtn = document.getElementById("tab-rank-btn");
@@ -827,9 +827,6 @@
             });
         }
 
-        // -------------------------------------------------------------
-        // 학생 미션 (모달창) 제어
-        // -------------------------------------------------------------
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -879,8 +876,8 @@
                     ndef.addEventListener("reading", ({ message }) => {
                         for (const record of message.records) {
                             if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
-                                const textDecoder = new TextDecoder(record.encoding || "utf-8");
-                                let urlData = textDecoder.decode(record.data);
+                                let urlData = new TextDecoder(record.encoding || "utf-8").decode(record.data);
+                                urlData = urlData.replace(/\0/g, ''); 
                                 try {
                                     let urlObj = new URL(urlData);
                                     let goblin = urlObj.searchParams.get('goblin');
