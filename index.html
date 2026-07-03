@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- [신규] Firebase 클라우드 연동 라이브러리 추가 -->
+    <!-- Firebase 클라우드 연동 라이브러리 -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -113,7 +113,14 @@
             <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 p-4 sticky top-0 z-20 flex justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <div class="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">F</span></div>
-                    <div><h2 class="font-bold text-slate-900 text-sm tracking-tight" id="user-info-text">1조</h2><p class="text-[10px] text-slate-400 -mt-0.5" id="user-members-text">조원 정보 로딩 중</p></div>
+                    <div>
+                        <!-- [추가] 학생 로그아웃 버튼 -->
+                        <div class="flex items-center space-x-2">
+                            <h2 class="font-bold text-slate-900 text-sm tracking-tight" id="user-info-text">1조</h2>
+                            <button onclick="logout()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-200 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm transition-finez">로그아웃</button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 -mt-0.5" id="user-members-text">조원 정보 로딩 중</p>
+                    </div>
                 </div>
                 <div class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md">💰 <span id="user-score">0</span> PTS</div>
             </header>
@@ -151,7 +158,14 @@
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-2">
                         <div class="w-6 h-6 bg-red-500 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">A</span></div>
-                        <div><h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2><p class="text-[10px] text-red-400 -mt-0.5 animate-pulse">● 실시간 클라우드 관제 중</p></div>
+                        <div>
+                            <!-- [추가] 관리자 로그아웃 버튼 -->
+                            <div class="flex items-center space-x-2">
+                                <h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2>
+                                <button onclick="logout()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm transition-finez">로그아웃</button>
+                            </div>
+                            <p class="text-[10px] text-red-400 -mt-0.5 animate-pulse">● 실시간 클라우드 관제 중</p>
+                        </div>
                     </div>
                     <button onclick="clearAllData()" class="bg-red-600/30 text-[11px] font-bold px-2.5 py-1 rounded-full text-red-200">클라우드 전체 초기화</button>
                 </div>
@@ -415,11 +429,9 @@
         // Firebase 리스너 및 데이터 동기화 함수
         // -------------------------------------------------------------
         function initData() {
-            // 1. 유저 데이터 실시간 수신
             db.ref('usersDB').on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     usersDB = snapshot.val();
-                    // Firebase는 빈 배열/객체를 삭제하므로 기본 구조를 복원합니다.
                     Object.keys(usersDB).forEach(key => {
                         let u = usersDB[key];
                         if (!u.failedAttempts) u.failedAttempts = {};
@@ -434,12 +446,10 @@
                     db.ref('usersDB').set(usersDB);
                 }
                 
-                // 데이터가 처음 로드되었을 때만 로그인 검증 실행
                 if (!isDbLoaded) {
                     isDbLoaded = true;
                     checkAuthentication();
                 } else {
-                    // 데이터 갱신 시 UI 업데이트
                     if (isAdmin) {
                         renderAdminDashboard();
                     } else if (currentToken && usersDB[currentToken]) {
@@ -451,13 +461,11 @@
                 }
             });
 
-            // 2. GPS 인증 시간 실시간 수신
             db.ref('gps_verified_quizzes').on('value', (snapshot) => {
                 if (snapshot.exists()) locationVerifiedQuizzes = snapshot.val();
                 else locationVerifiedQuizzes = {};
             });
 
-            // 3. 관리자용 모의 위치 스위치 실시간 수신
             db.ref('global_mock_location').on('value', (snapshot) => {
                 const isMocked = snapshot.val() === true;
                 localStorage.setItem("global_mock_location", isMocked ? "true" : "false");
@@ -467,10 +475,7 @@
             });
         }
 
-        // Firebase로 변경 사항을 올려보내는 함수
-        function saveAndSync() {
-            db.ref('usersDB').set(usersDB);
-        }
+        function saveAndSync() { db.ref('usersDB').set(usersDB); }
 
         function checkGpsSessionValid(courseId) {
             if (localStorage.getItem("global_mock_location") === "true") return true; 
@@ -479,12 +484,90 @@
             return (Date.now() - Number(timestamp)) < 2100000; 
         }
 
-        function syncLocationSimulatorState(checked) {
-            db.ref('global_mock_location').set(checked);
+        function syncLocationSimulatorState(checked) { db.ref('global_mock_location').set(checked); }
+
+        // -------------------------------------------------------------
+        // [핵심] 로그인 / 세션 유지 / 로그아웃 로직
+        // -------------------------------------------------------------
+        
+        // 로그아웃 (세션 삭제)
+        function logout() {
+            if(confirm("정말 로그아웃 하시겠습니까?")) {
+                localStorage.removeItem("active_user_token");
+                localStorage.removeItem("login_timestamp");
+                isAdmin = false; currentUser = null; currentToken = "";
+                // 파라미터 없이 깨끗한 주소로 메인화면 복귀
+                window.location.href = window.location.pathname; 
+            }
+        }
+
+        // 로그인 처리 시 시간 기억
+        function handleInAppAuth(token) {
+            // 로그인 세션 및 현재 시간 저장 (30분 유효)
+            localStorage.setItem("active_user_token", token);
+            localStorage.setItem("login_timestamp", Date.now());
+
+            if (token === 'admin_secret') {
+                isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
+            } else if (usersDB[token]) {
+                isAdmin = false; currentToken = token; currentUser = usersDB[token];
+                if (!currentUser.isConfigured) {
+                    hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
+                    document.getElementById("setup-team-input").value = currentUser.team;
+                } else {
+                    triggerLoadingSequence();
+                }
+            } else { 
+                alert("등록되지 않은 카드입니다."); 
+                localStorage.removeItem("active_user_token");
+                hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
+            }
+        }
+
+        // 페이지 진입 시 세션 확인
+        function checkAuthentication() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenUrl = urlParams.get('token');
+            const goblinCode = urlParams.get('goblin');
+
+            // 1. 고블린 태그 검사 (URL 우선)
+            if (goblinCode) { 
+                window.history.replaceState({}, document.title, window.location.pathname); // URL 찌꺼기 지우기
+                processGoblinTag(goblinCode); 
+                return; 
+            }
+
+            let token = tokenUrl;
+            
+            // 2. URL에 토큰이 없다면 스마트폰 내부 기억장치(세션) 확인
+            if (!token) {
+                const savedToken = localStorage.getItem("active_user_token");
+                const savedTime = localStorage.getItem("login_timestamp");
+                
+                if (savedToken && savedTime) {
+                    const elapsed = Date.now() - Number(savedTime);
+                    if (elapsed < 30 * 60 * 1000) { // 30분(1800000ms) 이내라면 로그인 인정!
+                        token = savedToken;
+                    } else { // 30분이 지났다면 강제 로그아웃
+                        localStorage.removeItem("active_user_token");
+                        localStorage.removeItem("login_timestamp");
+                        alert("로그인 세션(30분)이 만료되었습니다. 카드를 다시 태그해 주세요.");
+                    }
+                }
+            }
+
+            // 3. 최종 확인된 토큰으로 시스템 진입
+            if (token) { 
+                if(tokenUrl) window.history.replaceState({}, document.title, window.location.pathname); // 새로고침 대비 URL 지우기
+                handleInAppAuth(token); 
+            } else { 
+                hideAllScreens(); 
+                document.getElementById("auth-screen").classList.remove("hidden"); 
+            }
         }
 
         // -------------------------------------------------------------
-        // 하이브리드 로그인 및 고블린 태그 로직
+        // 고블린 처리 및 하이브리드 스캐너
         // -------------------------------------------------------------
         async function activateNfcReaderSession() {
             const spinner = document.getElementById("nfc-spinner");
@@ -525,41 +608,6 @@
             }
         }
 
-        function handleInAppAuth(token) {
-            if (token === 'admin_secret') {
-                isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
-            } else if (usersDB[token]) {
-                isAdmin = false; currentToken = token; currentUser = usersDB[token];
-                localStorage.setItem("active_user_token", token);
-                if (!currentUser.isConfigured) {
-                    hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
-                    document.getElementById("setup-team-input").value = currentUser.team;
-                } else {
-                    triggerLoadingSequence();
-                }
-            } else { 
-                alert("등록되지 않은 카드입니다."); 
-                hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
-            }
-        }
-
-        function checkAuthentication() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            const goblinCode = urlParams.get('goblin');
-
-            if (goblinCode) { 
-                processGoblinTag(goblinCode); 
-                return; 
-            }
-            if (token) { 
-                handleInAppAuth(token); 
-            } else { 
-                hideAllScreens(); 
-                document.getElementById("auth-screen").classList.remove("hidden"); 
-            }
-        }
-
         function processGoblinTag(code) {
             hideAllScreens();
             document.getElementById("goblin-result-screen").classList.remove("hidden");
@@ -594,7 +642,7 @@
             currentUser.score += pts;
             currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
             usersDB[currentToken] = currentUser;
-            saveAndSync(); // 변경사항 즉시 클라우드 업로드
+            saveAndSync(); 
 
             document.getElementById("goblin-result-icon").innerText = icon;
             document.getElementById("goblin-title").innerText = title;
@@ -604,12 +652,13 @@
             document.getElementById("goblin-score-box").className = `bg-slate-800 rounded-3xl p-8 border-2 shadow-2xl relative overflow-hidden ${pts > 0 ? 'border-emerald-500/50' : 'border-rose-500/50'}`;
         }
 
+        // 고블린 완료 후 파라미터 없이 깔끔하게 돌아가기
         function closeGoblinScreen() {
-            window.location.href = "?token=" + currentToken;
+            window.location.href = window.location.pathname; 
         }
 
         // -------------------------------------------------------------
-        // 화면 전환 및 UI 제어
+        // 화면 제어 및 초기화
         // -------------------------------------------------------------
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
@@ -717,7 +766,7 @@
         function adjustAdminScore(token, amount) { usersDB[token].score += amount; saveAndSync(); }
 
         // -------------------------------------------------------------
-        // 학생 대시보드
+        // 학생 대시보드 렌더링
         // -------------------------------------------------------------
         function switchTab(tab) {
             const qBtn = document.getElementById("tab-quiz-btn"), rBtn = document.getElementById("tab-rank-btn");
@@ -779,7 +828,7 @@
         }
 
         // -------------------------------------------------------------
-        // 학생 미션 화면 (모달) 제어
+        // 학생 미션 (모달창) 제어
         // -------------------------------------------------------------
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
@@ -974,9 +1023,6 @@
             currentBaseCourseId = null; renderQuizList(); 
         }
 
-        // -------------------------------------------------------------
-        // 퀴즈 처리 (연속 진행)
-        // -------------------------------------------------------------
         function startSequentialQuiz() {
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
             pendingQuizQueue = subQuizzes.filter(q => !currentUser.solved.includes(q.id) && (currentUser.failedAttempts[q.id] || 0) < 2);
@@ -1101,9 +1147,6 @@
             }
         }
 
-        // -------------------------------------------------------------
-        // 사진 제출 및 보물상자(가챠) 로직
-        // -------------------------------------------------------------
         function triggerFilePicker() { document.getElementById("photo-hidden-file").click(); }
         function loadPhotoPreview(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -1169,9 +1212,6 @@
             usersDB[currentToken] = currentUser; saveAndSync(); closeModal();
         }
 
-        // -------------------------------------------------------------
-        // 리더보드 렌더링
-        // -------------------------------------------------------------
         let activeAccordionToken = null;
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
 
@@ -1234,12 +1274,11 @@
             });
         }
 
-        // 초기 시작 로직 - 안전한 대기화면 적용
         window.onload = function() { 
             hideAllScreens(); 
             document.getElementById("loading-screen").classList.remove("hidden");
             document.getElementById("loading-title").innerText = "서버 데이터 연결 중...";
-            initData(); // Firebase 데이터베이스 리스너 가동!
+            initData(); 
         };
     </script>
 </body>
