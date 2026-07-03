@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- [신규] Firebase 클라우드 연동 라이브러리 추가 -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
         
@@ -147,9 +151,9 @@
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-2">
                         <div class="w-6 h-6 bg-red-500 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">A</span></div>
-                        <div><h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2><p class="text-[10px] text-red-400 -mt-0.5 animate-pulse">● 실시간 원격 관제 중</p></div>
+                        <div><h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2><p class="text-[10px] text-red-400 -mt-0.5 animate-pulse">● 실시간 클라우드 관제 중</p></div>
                     </div>
-                    <button onclick="clearAllData()" class="bg-red-600/30 text-[11px] font-bold px-2.5 py-1 rounded-full text-red-200">전체 데이터 리셋</button>
+                    <button onclick="clearAllData()" class="bg-red-600/30 text-[11px] font-bold px-2.5 py-1 rounded-full text-red-200">클라우드 전체 초기화</button>
                 </div>
                 <div class="bg-slate-800 rounded-xl p-3 flex justify-between items-center border border-slate-700/60">
                     <div><p class="text-xs font-bold text-slate-200">🌐 전체 위치 시뮬레이터 마스터 스위치</p><p class="text-[10px] text-slate-400">활성화 시 지도 확인 없이 GPS 장벽이 강제 해제됩니다.</p></div>
@@ -304,6 +308,25 @@
     </div>
 
     <script>
+        // -------------------------------------------------------------
+        // Firebase 구성 및 초기화
+        // -------------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5lqY2NqitjHTnJOnsgxX_yzNOIuMw5t8",
+            authDomain: "sayon-dapsa.firebaseapp.com",
+            databaseURL: "https://sayon-dapsa-default-rtdb.firebaseio.com",
+            projectId: "sayon-dapsa",
+            storageBucket: "sayon-dapsa.firebasestorage.app",
+            messagingSenderId: "644961443759",
+            appId: "1:644961443759:web:596370b03a702ce509595a"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // -------------------------------------------------------------
+        // 기본 데이터 설정
+        // -------------------------------------------------------------
         const coursesDB = {
             "course_01": { name: "남원 유곡리와 두락리 고분군", lat: 35.507804, lng: 127.620780, day: 1 },
             "course_02": { name: "실상사", lat: 35.418720, lng: 127.637634, day: 1 },
@@ -375,7 +398,10 @@
             "token_park789": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, isConfigured: false }
         };
 
-        let usersDB = {...defaultUsersDB};
+        // -------------------------------------------------------------
+        // 글로벌 변수 상태
+        // -------------------------------------------------------------
+        let usersDB = {};
         let isAdmin = false; let currentUser = null; let currentToken = ""; let currentSelectedDay = 1;
         let currentBaseCourseId = null; let currentActiveQuiz = null; let locationVerifiedQuizzes = {}; 
         let timerInterval = null; let rouletteInterval = null; let finalRolledReward = null; 
@@ -383,18 +409,67 @@
         let verifyMap = null; let mapTargetMarker = null; let mapUserMarker = null; let mapTargetCircle = null;
         let currentCalculatedDistance = 999999;
         let pendingQuizQueue = []; 
+        let isDbLoaded = false;
 
+        // -------------------------------------------------------------
+        // Firebase 리스너 및 데이터 동기화 함수
+        // -------------------------------------------------------------
         function initData() {
-            const savedDB = localStorage.getItem("quiz_users_db");
-            if (savedDB) { try { usersDB = JSON.parse(savedDB); } catch(e) { usersDB = {...defaultUsersDB}; } } else { localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); }
-            Object.keys(usersDB).forEach(key => {
-                let u = usersDB[key];
-                if (!u.failedAttempts) u.failedAttempts = {}; if (!u.photoStatus) u.photoStatus = {};
-                if (!u.photoData) u.photoData = {}; if (!u.photoVerified) u.photoVerified = {}; if (!Array.isArray(u.solved)) u.solved = [];
+            // 1. 유저 데이터 실시간 수신
+            db.ref('usersDB').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    usersDB = snapshot.val();
+                    // Firebase는 빈 배열/객체를 삭제하므로 기본 구조를 복원합니다.
+                    Object.keys(usersDB).forEach(key => {
+                        let u = usersDB[key];
+                        if (!u.failedAttempts) u.failedAttempts = {};
+                        if (!u.photoStatus) u.photoStatus = {};
+                        if (!u.photoData) u.photoData = {};
+                        if (!u.photoVerified) u.photoVerified = {};
+                        if (!u.solved) u.solved = [];
+                        if (u.score === undefined) u.score = 0;
+                    });
+                } else {
+                    usersDB = {...defaultUsersDB};
+                    db.ref('usersDB').set(usersDB);
+                }
+                
+                // 데이터가 처음 로드되었을 때만 로그인 검증 실행
+                if (!isDbLoaded) {
+                    isDbLoaded = true;
+                    checkAuthentication();
+                } else {
+                    // 데이터 갱신 시 UI 업데이트
+                    if (isAdmin) {
+                        renderAdminDashboard();
+                    } else if (currentToken && usersDB[currentToken]) {
+                        currentUser = usersDB[currentToken];
+                        updateHeaderUI();
+                        if(currentSelectedDay) renderQuizList();
+                    }
+                    renderLeaderboard();
+                }
             });
-            const savedGps = localStorage.getItem("gps_verified_quizzes");
-            if (savedGps) locationVerifiedQuizzes = JSON.parse(savedGps);
-            if (!localStorage.getItem("global_mock_location")) localStorage.setItem("global_mock_location", "false");
+
+            // 2. GPS 인증 시간 실시간 수신
+            db.ref('gps_verified_quizzes').on('value', (snapshot) => {
+                if (snapshot.exists()) locationVerifiedQuizzes = snapshot.val();
+                else locationVerifiedQuizzes = {};
+            });
+
+            // 3. 관리자용 모의 위치 스위치 실시간 수신
+            db.ref('global_mock_location').on('value', (snapshot) => {
+                const isMocked = snapshot.val() === true;
+                localStorage.setItem("global_mock_location", isMocked ? "true" : "false");
+                const st2 = document.getElementById("admin-mock-location-toggle");
+                if (st2) st2.checked = isMocked;
+                if (!isAdmin && currentUser && currentSelectedDay) renderQuizList();
+            });
+        }
+
+        // Firebase로 변경 사항을 올려보내는 함수
+        function saveAndSync() {
+            db.ref('usersDB').set(usersDB);
         }
 
         function checkGpsSessionValid(courseId) {
@@ -405,31 +480,12 @@
         }
 
         function syncLocationSimulatorState(checked) {
-            localStorage.setItem("global_mock_location", checked ? "true" : "false");
-            const st2 = document.getElementById("admin-mock-location-toggle");
-            if(st2) st2.checked = checked; saveAndSync();
+            db.ref('global_mock_location').set(checked);
         }
 
-        function saveAndSync() {
-            localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
-            if (isAdmin) renderAdminDashboard(); else if (currentUser) { currentUser = usersDB[currentToken]; updateHeaderUI(); renderQuizList(); }
-            renderLeaderboard();
-        }
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === "quiz_users_db" && e.newValue) {
-                usersDB = JSON.parse(e.newValue);
-                if (isAdmin) renderAdminDashboard(); else if (currentUser) { currentUser = usersDB[currentToken]; updateHeaderUI(); renderQuizList(); }
-                renderLeaderboard();
-            }
-            if (e.key === "global_mock_location") {
-                const isChecked = localStorage.getItem("global_mock_location") === "true";
-                const st2 = document.getElementById("admin-mock-location-toggle");
-                if(st2) st2.checked = isChecked;
-                if (!isAdmin && currentUser) renderQuizList();
-            }
-        });
-
+        // -------------------------------------------------------------
+        // 하이브리드 로그인 및 고블린 태그 로직
+        // -------------------------------------------------------------
         async function activateNfcReaderSession() {
             const spinner = document.getElementById("nfc-spinner");
             const statusText = document.getElementById("nfc-status-text");
@@ -487,14 +543,10 @@
             }
         }
 
-        // [핵심 버그 수정부] 페이지 진입 즉시 URL 파라미터를 읽어들이도록 복구!
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const goblinCode = urlParams.get('goblin');
-            const isMocked = localStorage.getItem("global_mock_location") === "true";
-            const st2 = document.getElementById("admin-mock-location-toggle");
-            if(st2) st2.checked = isMocked;
 
             if (goblinCode) { 
                 processGoblinTag(goblinCode); 
@@ -542,7 +594,7 @@
             currentUser.score += pts;
             currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
             usersDB[currentToken] = currentUser;
-            localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+            saveAndSync(); // 변경사항 즉시 클라우드 업로드
 
             document.getElementById("goblin-result-icon").innerText = icon;
             document.getElementById("goblin-title").innerText = title;
@@ -552,11 +604,13 @@
             document.getElementById("goblin-score-box").className = `bg-slate-800 rounded-3xl p-8 border-2 shadow-2xl relative overflow-hidden ${pts > 0 ? 'border-emerald-500/50' : 'border-rose-500/50'}`;
         }
 
-        // URL 강제 복귀 수정
         function closeGoblinScreen() {
             window.location.href = "?token=" + currentToken;
         }
 
+        // -------------------------------------------------------------
+        // 화면 전환 및 UI 제어
+        // -------------------------------------------------------------
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
             document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("app-screen").classList.add("hidden");
@@ -585,12 +639,18 @@
         }
 
         function clearAllData() {
-            if(confirm("모든 조의 점수, 인증샷, 진행 내역을 초기화하시겠습니까?")) {
-                localStorage.clear(); usersDB = {...defaultUsersDB}; locationVerifiedQuizzes = {}; localStorage.setItem("global_mock_location", "false");
-                saveAndSync(); alert("시스템 리셋이 완료되었습니다."); window.location.reload();
+            if(confirm("모든 조의 점수, 인증샷, 진행 내역을 완전히 초기화하시겠습니까?")) {
+                usersDB = {...defaultUsersDB};
+                db.ref('usersDB').set(usersDB);
+                db.ref('gps_verified_quizzes').set({});
+                db.ref('global_mock_location').set(false);
+                alert("클라우드 시스템 리셋이 완료되었습니다.");
             }
         }
 
+        // -------------------------------------------------------------
+        // 관리자 대시보드
+        // -------------------------------------------------------------
         function renderAdminDashboard() {
             const teamCardContainer = document.getElementById("admin-team-cards"); teamCardContainer.innerHTML = "";
             Object.keys(usersDB).forEach(token => {
@@ -656,6 +716,9 @@
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
         function adjustAdminScore(token, amount) { usersDB[token].score += amount; saveAndSync(); }
 
+        // -------------------------------------------------------------
+        // 학생 대시보드
+        // -------------------------------------------------------------
         function switchTab(tab) {
             const qBtn = document.getElementById("tab-quiz-btn"), rBtn = document.getElementById("tab-rank-btn");
             const qCon = document.getElementById("tab-quiz-content"), rCon = document.getElementById("tab-rank-content");
@@ -715,6 +778,9 @@
             });
         }
 
+        // -------------------------------------------------------------
+        // 학생 미션 화면 (모달) 제어
+        // -------------------------------------------------------------
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -821,7 +887,7 @@
                 initLeafletMap(course.lat, course.lng, userLat, userLng, course.name);
                 
             }, (err) => {
-                alert("GPS 신호를 가져올 수 신호를 가져올 수 없습니다. 브라우저 위치 권한을 반드시 허용해 주세요.");
+                alert("GPS 신호를 가져올 수 없습니다. 브라우저 위치 권한을 반드시 허용해 주세요.");
                 showLockSection();
             }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
@@ -854,14 +920,13 @@
             const isMocked = localStorage.getItem("global_mock_location") === "true";
             if (isMocked || currentCalculatedDistance <= 100) {
                 locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); 
-                localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
+                db.ref('gps_verified_quizzes').set(locationVerifiedQuizzes);
                 showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList();
             } else {
                 alert(`❌ 인증 불가!\n\n현재 목표 구역 반경 100m를 벗어나 있습니다.\n(현재 거리: ${currentCalculatedDistance}m)\n\n지도상의 파란색 원 안으로 진입한 후 다시 버튼을 눌러주세요.`);
             }
         }
 
-        // [버그 수정 완료] 보물상자 다이렉트 트리거 함수 복구!
         function triggerDirectTreasureGacha(courseId) {
             currentBaseCourseId = courseId; const course = coursesDB[courseId];
             document.getElementById("modal-badge").innerText = `${course.day}일차`;
@@ -909,6 +974,9 @@
             currentBaseCourseId = null; renderQuizList(); 
         }
 
+        // -------------------------------------------------------------
+        // 퀴즈 처리 (연속 진행)
+        // -------------------------------------------------------------
         function startSequentialQuiz() {
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
             pendingQuizQueue = subQuizzes.filter(q => !currentUser.solved.includes(q.id) && (currentUser.failedAttempts[q.id] || 0) < 2);
@@ -994,7 +1062,7 @@
             if (selected === currentActiveQuiz.answer) {
                 btnElement.className = "w-full text-left p-3.5 border-2 border-lime-500 bg-lime-50 rounded-xl text-xs font-bold text-lime-700 flex justify-between items-center shadow-sm transition-finez";
                 currentUser.score += currentActiveQuiz.points; currentUser.solved.push(qId);
-                usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); updateHeaderUI();
+                usersDB[currentToken] = currentUser; saveAndSync();
 
                 pendingQuizQueue.shift();
 
@@ -1006,7 +1074,7 @@
             } else {
                 btnElement.className = "w-full text-left p-3.5 border border-rose-400 bg-rose-50 rounded-xl text-xs font-bold text-rose-700 flex justify-between items-center shadow-sm shake-effect";
                 setTimeout(() => {
-                    failedCount++; currentUser.failedAttempts[qId] = failedCount; usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+                    failedCount++; currentUser.failedAttempts[qId] = failedCount; usersDB[currentToken] = currentUser; saveAndSync();
                     
                     if (failedCount >= 2) { 
                         alert(`❌ 기회 소진! 아쉽게도 해당 문항은 정답 실패(잠금) 처리됩니다.`); 
@@ -1028,11 +1096,14 @@
             });
             if (processedCount === 4 && !currentUser.photoVerified[currentBaseCourseId + "_report_done"]) {
                 currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true;
-                usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+                usersDB[currentToken] = currentUser; saveAndSync();
                 setTimeout(() => { alert(`🎉 [답사 역사 미션 종료 성적표] \n\n본 코스의 4단계를 모두 마무리하셨습니다! \n★ 총 4문제 중 [ ${correctCount}문제 ] 정답 통과 완료!`); }, 400);
             }
         }
 
+        // -------------------------------------------------------------
+        // 사진 제출 및 보물상자(가챠) 로직
+        // -------------------------------------------------------------
         function triggerFilePicker() { document.getElementById("photo-hidden-file").click(); }
         function loadPhotoPreview(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -1056,13 +1127,12 @@
             const previewImg = document.getElementById("photo-box-preview"); const dataUrl = previewImg.getAttribute("data-base64");
             if (!dataUrl) { alert("사진을 첨부해 주세요!"); return; }
             currentUser.photoData[currentBaseCourseId] = dataUrl; currentUser.photoStatus[currentBaseCourseId] = 'pending';
-            usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+            usersDB[currentToken] = currentUser; saveAndSync();
             alert("사진 전송 성공! 스태프 심사가 완료되면 황금 상자 락이 열립니다."); closeModal();
         }
 
         function backToChoice() { showChoiceSection(); }
 
-        // [버그 수정 완료] 가챠 시작 시 모든 UI 초기화 및 중복 클릭 방지 처리
         function startGachaSequence() {
             document.getElementById("modal-lock-section").classList.add("hidden"); 
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -1096,9 +1166,12 @@
         function confirmGachaReward() {
             currentUser.photoVerified[currentBaseCourseId] = { tier: finalRolledReward.name, points: finalRolledReward.points, color: finalRolledReward.color };
             currentUser.photoStatus[currentBaseCourseId] = 'claimed'; currentUser.score += finalRolledReward.points;
-            usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); updateHeaderUI(); closeModal();
+            usersDB[currentToken] = currentUser; saveAndSync(); closeModal();
         }
 
+        // -------------------------------------------------------------
+        // 리더보드 렌더링
+        // -------------------------------------------------------------
         let activeAccordionToken = null;
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
 
@@ -1161,10 +1234,12 @@
             });
         }
 
-        // [핵심 변경부] 로드 시 자동 URL 체크 로직 100% 정상화
+        // 초기 시작 로직 - 안전한 대기화면 적용
         window.onload = function() { 
-            initData(); 
-            checkAuthentication(); 
+            hideAllScreens(); 
+            document.getElementById("loading-screen").classList.remove("hidden");
+            document.getElementById("loading-title").innerText = "서버 데이터 연결 중...";
+            initData(); // Firebase 데이터베이스 리스너 가동!
         };
     </script>
 </body>
