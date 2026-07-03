@@ -32,6 +32,25 @@
     <div class="mobile-container flex flex-col justify-between relative bg-white">
         <div class="finez-bg"></div><div class="gradient-blob-1"></div><div class="gradient-blob-2"></div>
         
+        <!-- [신규 화면] 황금 고블린 결과 풀스크린 모달 -->
+        <div id="goblin-result-screen" class="hidden absolute inset-0 z-[200] bg-slate-900 flex flex-col justify-center items-center p-6">
+            <div class="text-center space-y-6 w-full max-w-sm">
+                <div id="goblin-result-icon" class="text-7xl animate-bounce drop-shadow-2xl">👺</div>
+                <div class="space-y-1">
+                    <h2 id="goblin-title" class="text-3xl font-black text-white tracking-tight">고블린 조우!</h2>
+                    <p id="goblin-desc" class="text-sm text-slate-300 font-medium">결과를 판독 중입니다...</p>
+                </div>
+                <div id="goblin-score-box" class="bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">실시간 스코어 변동</p>
+                    <p id="goblin-score" class="text-6xl font-black text-amber-400 tracking-tighter drop-shadow-md">0</p>
+                </div>
+                <button onclick="closeGoblinScreen()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-sm shadow-lg transition-finez mt-4">
+                    대시보드로 복귀하기
+                </button>
+            </div>
+        </div>
+
         <!-- [화면 1] NFC 대기 및 활성화 메인화면 -->
         <div id="auth-screen" class="hidden flex-1 flex flex-col justify-between p-6 relative z-10">
             <div class="flex justify-center mt-4">
@@ -206,6 +225,12 @@
                             <p class="text-xs text-slate-400" id="modal-gps-timer">남은 인증 시간: 35분 00초</p>
                         </div>
                         <div class="grid grid-cols-1 gap-2.5 text-left">
+                            
+                            <!-- [신규 기능] 낙안읍성 전용 황금 고블린 포획 버튼 -->
+                            <button id="branch-goblin-btn" onclick="goToGoblinSection()" class="hidden w-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white font-extrabold py-3.5 rounded-xl text-xs flex justify-between items-center shadow-md transition-finez treasure-glow mb-1">
+                                <div class="flex items-center space-x-2"><span class="text-lg animate-bounce">👺</span> <span>황금 고블린 '점수를 잡아라!'</span></div> <span class="font-black border border-white/40 px-2 py-0.5 rounded">태그하기 →</span>
+                            </button>
+
                             <button onclick="startSequentialQuiz()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs flex justify-between items-center shadow-sm">
                                 <span>📝 역사 퀴즈 풀기 (연속 진행 / 건너뛰기 가능)</span><span>→</span>
                             </button>
@@ -215,7 +240,23 @@
                         </div>
                     </div>
 
-                    <!-- 구역 D: 퀴즈 단일 출력 및 연속 진행 섹션 (목차 UI 완전 삭제) -->
+                    <!-- [신규 구역] 황금 고블린 NFC 태그 대기 화면 -->
+                    <div id="modal-goblin-section" class="hidden text-center py-6 px-2 space-y-6">
+                        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">👺</div>
+                        <div class="space-y-2">
+                            <p class="text-base font-black text-amber-600 tracking-tight">황금 고블린 출몰 지역!</p>
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">마을을 배회하는 고블린(스태프)을 찾아<br>고블린의 전용 NFC 카드를 스마트폰에 태그하세요.</p>
+                        </div>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 shadow-sm relative overflow-hidden">
+                            <div class="absolute inset-0 bg-blue-500/5 animate-pulse"></div>
+                            <div class="w-10 h-10 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto mb-3 relative z-10"></div>
+                            <p class="text-[11px] font-extrabold text-blue-600 relative z-10">NFC 태그 스캔 대기 중...</p>
+                            <p class="text-[10px] text-slate-400 mt-1 relative z-10">태그 즉시 무작위 보너스나 폭탄이 적용됩니다!</p>
+                        </div>
+                        <button onclick="showChoiceSection()" class="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 font-bold py-3 rounded-xl text-[11px] transition-finez shadow-sm">← 미션 선택으로 돌아가기</button>
+                    </div>
+
+                    <!-- 구역 D: 퀴즈 단일 출력 및 연속 진행 섹션 -->
                     <div id="modal-quiz-section" class="hidden space-y-4">
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
                             <div class="flex justify-between items-center mb-2">
@@ -227,7 +268,6 @@
                         <div id="modal-hint-box" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium p-3 rounded-xl flex items-start space-x-2">
                             <span>💡 <b>역사 힌트:</b></span> <span id="modal-hint-text">힌트 내용</span>
                         </div>
-                        <!-- 옵션과 건너뛰기 버튼이 스크립트를 통해 자동으로 렌더링 됩니다. -->
                         <div id="modal-options" class="space-y-2"></div>
                     </div>
 
@@ -342,7 +382,7 @@
         let verifyMap = null; let mapTargetMarker = null; let mapUserMarker = null; let mapTargetCircle = null;
         let currentCalculatedDistance = 999999;
         
-        let pendingQuizQueue = []; // 연속 퀴즈 큐
+        let pendingQuizQueue = []; 
 
         function initData() {
             const savedDB = localStorage.getItem("quiz_users_db");
@@ -404,14 +444,25 @@
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
+            const goblinCode = urlParams.get('goblin');
             const isMocked = localStorage.getItem("global_mock_location") === "true";
             const st2 = document.getElementById("admin-mock-location-toggle");
             if(st2) st2.checked = isMocked;
+
+            // [신규] 고블린 태그 이벤트 감지 시 최우선 화면 전환
+            if (goblinCode) {
+                processGoblinTag(goblinCode);
+                return; 
+            }
 
             if (token === 'admin_secret') {
                 isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
             } else if (token && usersDB[token]) {
                 isAdmin = false; currentToken = token; currentUser = usersDB[token];
+                
+                // [신규] 고블린 탭 전환 시 자신이 누구인지 기억하게 만드는 세션 저장
+                localStorage.setItem("active_user_token", token); 
+                
                 if (!currentUser.isConfigured) {
                     hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
                     document.getElementById("setup-team-input").value = currentUser.team;
@@ -419,10 +470,63 @@
             } else { hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); }
         }
 
+        // [신규] 고블린 NFC 태그 처리 로직
+        function processGoblinTag(code) {
+            hideAllScreens();
+            document.getElementById("goblin-result-screen").classList.remove("hidden");
+            
+            const activeToken = localStorage.getItem("active_user_token");
+            if (!activeToken || !usersDB[activeToken]) {
+                document.getElementById("goblin-title").innerText = "접근 거부";
+                document.getElementById("goblin-desc").innerText = "로그인된 조 정보가 없습니다. 학생 카드를 먼저 태그하세요.";
+                document.getElementById("goblin-score").innerText = "❌";
+                document.getElementById("goblin-score-box").className = "bg-slate-800 rounded-3xl p-8 border-2 border-rose-500 shadow-2xl relative overflow-hidden";
+                return;
+            }
+
+            currentUser = usersDB[activeToken];
+            currentToken = activeToken;
+
+            // 중복 태그 방지 처리 (이미 잡은 고블린 방어)
+            if(currentUser.photoVerified["goblin_" + code]) {
+                document.getElementById("goblin-title").innerText = "이미 잡은 고블린!";
+                document.getElementById("goblin-desc").innerText = "이 고블린은 이미 포획되었습니다.";
+                document.getElementById("goblin-score").innerText = "0";
+                document.getElementById("goblin-score-box").className = "bg-slate-800 rounded-3xl p-8 border-2 border-slate-600 shadow-2xl relative overflow-hidden";
+                return;
+            }
+
+            let pts = 0; let title = ""; let colorClass = ""; let icon = "👺";
+            
+            // 점수 및 상태 분기 (추후 마음대로 확장 가능)
+            if (code === 'plus50') { pts = 50; title = "황금 보따리 획득!"; colorClass = "text-emerald-400"; icon="🎉"; }
+            else if (code === 'minus30') { pts = -30; title = "앗! 고블린의 함정!"; colorClass = "text-rose-500"; icon="💣"; }
+            else if (code === 'plus100') { pts = 100; title = "전설의 고블린 포획!"; colorClass = "text-amber-400"; icon="👑"; }
+            else { pts = 10; title = "소소한 동전 줍줍!"; colorClass = "text-blue-400"; icon="🪙"; }
+
+            currentUser.score += pts;
+            currentUser.photoVerified["goblin_" + code] = true;
+            usersDB[currentToken] = currentUser;
+            localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+
+            // 결과창 UI 업데이트
+            document.getElementById("goblin-result-icon").innerText = icon;
+            document.getElementById("goblin-title").innerText = title;
+            document.getElementById("goblin-desc").innerText = `${currentUser.team}의 점수가 변동되었습니다!`;
+            document.getElementById("goblin-score").innerText = (pts > 0 ? "+" : "") + pts;
+            document.getElementById("goblin-score").className = `text-6xl font-black tracking-tighter drop-shadow-md ${colorClass}`;
+            document.getElementById("goblin-score-box").className = `bg-slate-800 rounded-3xl p-8 border-2 shadow-2xl relative overflow-hidden ${pts > 0 ? 'border-emerald-500/50' : 'border-rose-500/50'}`;
+        }
+
+        function closeGoblinScreen() {
+            window.location.href = "https://boeing03.github.io/KURU18/?token=" + currentToken;
+        }
+
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
             document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("app-screen").classList.add("hidden");
             document.getElementById("admin-screen").classList.add("hidden");
+            document.getElementById("goblin-result-screen").classList.add("hidden");
         }
 
         function triggerLoadingSequence() {
@@ -576,7 +680,7 @@
             });
         }
 
-        // [버그 수정 완료] 없는 ID 요소를 숨기려 했던 코드 완벽히 제거!
+        // [수정] 모달 섹션 제어
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -584,6 +688,7 @@
             document.getElementById("modal-quiz-section").classList.add("hidden");
             document.getElementById("modal-photo-section").classList.add("hidden");
             document.getElementById("modal-gacha-section").classList.add("hidden");
+            document.getElementById("modal-goblin-section").classList.add("hidden");
         }
 
         function showChoiceSection() {
@@ -593,11 +698,24 @@
             document.getElementById("modal-quiz-section").classList.add("hidden");
             document.getElementById("modal-photo-section").classList.add("hidden");
             document.getElementById("modal-gacha-section").classList.add("hidden");
+            document.getElementById("modal-goblin-section").classList.add("hidden");
+
+            // [신규] 오직 낙안읍성(course_06)에서만 황금 고블린 버튼 표시
+            if (currentBaseCourseId === "course_06") {
+                document.getElementById("branch-goblin-btn").classList.remove("hidden");
+            } else {
+                document.getElementById("branch-goblin-btn").classList.add("hidden");
+            }
         }
 
         function goToPhotoSection() {
             document.getElementById("modal-branch-section").classList.add("hidden");
             document.getElementById("modal-photo-section").classList.remove("hidden");
+        }
+
+        function goToGoblinSection() {
+            document.getElementById("modal-branch-section").classList.add("hidden");
+            document.getElementById("modal-goblin-section").classList.remove("hidden");
         }
 
         function openLocationMap() {
@@ -715,7 +833,6 @@
             currentBaseCourseId = null; renderQuizList(); 
         }
 
-        // --- 연속 퀴즈 풀기 대기열 시스템 로직 ---
         function startSequentialQuiz() {
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
             pendingQuizQueue = subQuizzes.filter(q => !currentUser.solved.includes(q.id) && (currentUser.failedAttempts[q.id] || 0) < 2);
@@ -746,7 +863,7 @@
         function skipCurrentQuiz() {
             if (pendingQuizQueue.length > 1) {
                 const skipped = pendingQuizQueue.shift();
-                pendingQuizQueue.push(skipped); // 맨 뒤로 보내기
+                pendingQuizQueue.push(skipped);
                 loadNextQuestionFromQueue();
             } else {
                 alert("현재 남은 문항이 이 문제 하나뿐입니다.");
@@ -770,7 +887,6 @@
             const optionsContainer = document.getElementById("modal-options"); 
             optionsContainer.innerHTML = "";
             
-            // 객관식 선택지 렌더링
             quiz.options.forEach(opt => {
                 const btn = document.createElement("button");
                 btn.className = "w-full text-left p-3.5 border border-slate-200 bg-white rounded-xl text-xs font-semibold text-slate-800 flex justify-between items-center shadow-sm transition-finez";
@@ -779,7 +895,6 @@
                 optionsContainer.appendChild(btn);
             });
 
-            // 건너뛰기 버튼 (큐에 남은 문제가 2개 이상일 때만 표시)
             if (pendingQuizQueue.length > 1) {
                 const skipBtn = document.createElement("button");
                 skipBtn.className = "w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 font-bold py-2.5 rounded-xl text-[11px] transition-finez mt-4 text-center block shadow-inner";
@@ -788,7 +903,6 @@
                 optionsContainer.appendChild(skipBtn);
             }
 
-            // 미션 선택 메뉴로 돌아가기 (임시 중단)
             const returnBtn = document.createElement("button");
             returnBtn.className = "w-full bg-white border border-slate-200 text-slate-400 hover:text-slate-600 font-bold py-2.5 rounded-xl text-[11px] transition-finez mt-2 text-center block";
             returnBtn.innerText = "↩ 미션 선택 메뉴로 돌아가기 (임시 중단)";
@@ -806,7 +920,7 @@
                 currentUser.score += currentActiveQuiz.points; currentUser.solved.push(qId);
                 usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); updateHeaderUI();
 
-                pendingQuizQueue.shift(); // 정답 처리 후 큐에서 완전히 제거
+                pendingQuizQueue.shift();
 
                 const nextBtn = document.createElement("button"); 
                 nextBtn.className = "w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs shadow-md transition-finez mt-4";
@@ -820,7 +934,7 @@
                     
                     if (failedCount >= 2) { 
                         alert(`❌ 기회 소진! 아쉽게도 해당 문항은 정답 실패(잠금) 처리됩니다.`); 
-                        pendingQuizQueue.shift(); // 기회 소진 시 큐에서 제거하고 다음 문제로
+                        pendingQuizQueue.shift();
                         loadNextQuestionFromQueue();
                     } else { 
                         alert(`❌ 오답입니다! 하단의 역사 힌트 카드를 확인하고 다시 도전해 보세요.`); 
