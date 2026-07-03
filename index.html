@@ -6,7 +6,7 @@
     <title>Finez Honam - 통합 답사 관리 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- [신규 추가] 무료 오픈소스 지도 라이브러리 (Leaflet) 연동 -->
+    <!-- 무료 오픈소스 지도 라이브러리 (Leaflet) 연동 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -140,7 +140,24 @@
             </main>
         </div>
 
-        <!-- 통합 모달 구조 슬롯 -->
+        <!-- [오류 픽스!] 관리자 사진 심사 팝업 모달창 완전 복구 -->
+        <div id="admin-photo-modal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <span class="font-bold text-slate-900 text-sm" id="admin-photo-title">인증샷 심사</span>
+                    <button onclick="closeAdminPhoto()" class="text-slate-400 text-xl font-bold hover:text-slate-600">&times;</button>
+                </div>
+                <div class="p-2 bg-slate-100 flex justify-center items-center min-h-[250px] relative">
+                    <img id="admin-photo-img" src="" class="max-h-[50vh] object-contain rounded-lg shadow-sm">
+                </div>
+                <div class="p-4 flex space-x-2 bg-white">
+                    <button id="admin-photo-reject-btn" class="flex-1 border border-rose-200 text-rose-600 py-3 rounded-xl font-bold text-xs hover:bg-rose-50 transition">반려하기</button>
+                    <button id="admin-photo-approve-btn" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md transition">✅ 최종 승인</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 미션 통합 모달 구조 슬롯 -->
         <div id="quiz-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-slate-100/50 relative">
                 <div class="border-b border-slate-100 p-4 flex justify-between items-center bg-slate-50/50 sticky top-0 z-30">
@@ -162,7 +179,7 @@
                         <button onclick="openLocationMap()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-xs shadow-md transition-finez">지도에서 내 위치 확인하기 →</button>
                     </div>
 
-                    <!-- [신규 구역] 시각적 지도 검증 섹션 -->
+                    <!-- 시각적 지도 검증 섹션 -->
                     <div id="modal-map-section" class="hidden space-y-4">
                         <div class="text-center space-y-1">
                             <p class="text-sm font-black text-slate-900">현위치 반경 확인</p>
@@ -202,7 +219,6 @@
                         </div>
                     </div>
 
-                    <!-- 이하 구역 C, D, E 동일 유지 -->
                     <div id="modal-quiz-nav-section" class="hidden space-y-3">
                         <div class="bg-slate-50 border border-slate-100 p-3 rounded-xl"><p class="text-xs text-slate-700 font-bold">🎯 문제 선택 대시보드</p><p class="text-[11px] text-slate-400 mt-0.5">원하는 단계를 먼저 터치해서 해결할 수 있으며 모르는 문제는 건너뛰었다가 나중에 다시 진입해 풀 수 있습니다.</p></div>
                         <div id="quiz-step-buttons-grid" class="grid grid-cols-1 gap-2"></div>
@@ -253,7 +269,6 @@
     </div>
 
     <script>
-        // 전 코스 좌표 절대 삭제 없음 (완벽 보존 확인됨)
         const coursesDB = {
             "course_01": { name: "남원 유곡리와 두락리 고분군", lat: 35.507804, lng: 127.620780, day: 1 },
             "course_02": { name: "실상사", lat: 35.418720, lng: 127.637634, day: 1 },
@@ -330,7 +345,6 @@
         let currentBaseCourseId = null; let currentActiveQuiz = null; let locationVerifiedQuizzes = {}; 
         let timerInterval = null; let rouletteInterval = null; let finalRolledReward = null; 
         
-        // 지도 관련 변수
         let verifyMap = null; let mapTargetMarker = null; let mapUserMarker = null; let mapTargetCircle = null;
         let currentCalculatedDistance = 999999;
 
@@ -349,7 +363,6 @@
             if (!localStorage.getItem("global_mock_location")) localStorage.setItem("global_mock_location", "false");
         }
 
-        // 엄격한 세션/시뮬레이터 체크
         function checkGpsSessionValid(courseId) {
             if (localStorage.getItem("global_mock_location") === "true") return true; 
             const timestamp = locationVerifiedQuizzes[courseId];
@@ -478,6 +491,7 @@
                     subQuizzes.forEach(q => { if(user.solved.includes(q.id)) solvedCount++; if((user.failedAttempts[q.id]||0) >= 2) lockedCount++; });
                     let quizBadge = `<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">퀴즈 ${solvedCount}/4 ${lockedCount > 0 ? `(🔒${lockedCount})` : ''}</span>`;
                     let pStatus = user.photoStatus[courseId]; let photoBadge = `<span class="text-[10px] bg-slate-50 text-slate-300 px-1.5 py-0.5 rounded">사진 미등록</span>`;
+                    
                     if (pStatus === 'pending') photoBadge = `<button onclick="openAdminPhotoModal('${token}', '${courseId}')" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 font-bold px-1.5 py-0.5 rounded animate-pulse">📸 승인 대기</button>`;
                     else if (pStatus === 'approved') photoBadge = `<span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-1.5 py-0.5 rounded">✅ 승인됨</span>`;
                     else if (pStatus === 'claimed') photoBadge = `<span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded">🎁 상자개봉</span>`;
@@ -489,12 +503,22 @@
             });
         }
 
+        // [버그 해결] 누락되었던 팝업 연결 함수 및 모달 완전 정상화
         function openAdminPhotoModal(token, courseId) {
             const user = usersDB[token]; const imgData = user.photoData[courseId];
             document.getElementById("admin-photo-title").innerText = `${user.team} - 인증샷 원격 검수`;
-            document.getElementById("admin-photo-img").src = imgData || ""; document.getElementById("admin-photo-modal").classList.remove("hidden");
-            document.getElementById("admin-photo-approve-btn").onclick = function() { usersDB[token].photoStatus[courseId] = 'approved'; saveAndSync(); closeAdminPhoto(); };
-            document.getElementById("admin-photo-reject-btn").onclick = function() { usersDB[token].photoStatus[courseId] = null; usersDB[token].photoData[courseId] = null; saveAndSync(); closeAdminPhoto(); };
+            document.getElementById("admin-photo-img").src = imgData || ""; 
+            document.getElementById("admin-photo-modal").classList.remove("hidden");
+            
+            document.getElementById("admin-photo-approve-btn").onclick = function() { 
+                usersDB[token].photoStatus[courseId] = 'approved'; 
+                saveAndSync(); closeAdminPhoto(); 
+            };
+            document.getElementById("admin-photo-reject-btn").onclick = function() { 
+                usersDB[token].photoStatus[courseId] = null; 
+                usersDB[token].photoData[courseId] = null; 
+                saveAndSync(); closeAdminPhoto(); 
+            };
         }
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
         function adjustAdminScore(token, amount) { usersDB[token].score += amount; saveAndSync(); }
@@ -557,7 +581,6 @@
             });
         }
 
-        // --- 섹션 전환 함수들 ---
         function showLockSection() {
             document.getElementById("modal-lock-section").classList.remove("hidden");
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -583,7 +606,6 @@
             document.getElementById("modal-photo-section").classList.remove("hidden");
         }
 
-        // --- [핵심 기능] 시각적 지도 기반 위치 인증 로직 ---
         function openLocationMap() {
             document.getElementById("modal-lock-section").classList.add("hidden");
             document.getElementById("modal-map-section").classList.remove("hidden");
@@ -597,10 +619,8 @@
                 let userLat = pos.coords.latitude;
                 let userLng = pos.coords.longitude;
                 
-                // 마스터 시뮬레이터가 켜져 있으면 유저의 위치를 억지로 답사지 위치로 속임
                 if(isMocked) { userLat = course.lat; userLng = course.lng; }
 
-                // 하버사인 거리 계산
                 const R = 6371e3; 
                 const radLat1 = userLat * Math.PI / 180;
                 const radLat2 = course.lat * Math.PI / 180;
@@ -619,7 +639,6 @@
                     document.getElementById("map-distance-text").innerHTML = `목표 중심에서 <span class="font-bold ${color}">${currentCalculatedDistance}m</span> 떨어져 있습니다.`;
                 }
 
-                // 리플렛 맵 그리기
                 initLeafletMap(course.lat, course.lng, userLat, userLng, course.name);
                 
             }, (err) => {
@@ -637,11 +656,9 @@
             if(mapUserMarker) verifyMap.removeLayer(mapUserMarker);
             if(mapTargetCircle) verifyMap.removeLayer(mapTargetCircle);
 
-            // 타겟 원 반경 100m 파란색으로 표시
             mapTargetCircle = L.circle([tLat, tLng], { color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.25, radius: 100 }).addTo(verifyMap);
             mapTargetMarker = L.marker([tLat, tLng]).addTo(verifyMap).bindPopup(`<b>목표: ${tName}</b><br>이 반경 안으로 들어오세요.`).openPopup();
 
-            // 유저 마커 빨간색 점
             const userIcon = L.divIcon({
                 className: 'custom-user-marker',
                 html: `<div style="width: 14px; height: 14px; background-color: #ef4444; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`,
@@ -651,14 +668,11 @@
 
             const group = new L.featureGroup([mapTargetMarker, mapUserMarker]);
             verifyMap.fitBounds(group.getBounds(), { padding: [30, 30] });
-            
-            // 모달 안에서 맵이 깨지지 않도록 크기 재계산 (필수)
             setTimeout(() => { verifyMap.invalidateSize(); verifyMap.fitBounds(group.getBounds(), { padding: [30, 30] }); }, 300);
         }
 
         function finalizeLocationVerify() {
             const isMocked = localStorage.getItem("global_mock_location") === "true";
-            // 거리가 100m 이내이거나 마스터 시뮬레이터가 켜져 있을 때만 통과
             if (isMocked || currentCalculatedDistance <= 100) {
                 locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); 
                 localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
