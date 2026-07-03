@@ -481,9 +481,13 @@
                 } else {
                     triggerLoadingSequence();
                 }
-            } else { alert("등록되지 않은 카드입니다."); }
+            } else { 
+                alert("등록되지 않은 카드입니다."); 
+                hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
+            }
         }
 
+        // [핵심 버그 수정부] 페이지 진입 즉시 URL 파라미터를 읽어들이도록 복구!
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
@@ -492,8 +496,16 @@
             const st2 = document.getElementById("admin-mock-location-toggle");
             if(st2) st2.checked = isMocked;
 
-            if (goblinCode) { processGoblinTag(goblinCode); return; }
-            if (token) { handleInAppAuth(token); } else { hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); }
+            if (goblinCode) { 
+                processGoblinTag(goblinCode); 
+                return; 
+            }
+            if (token) { 
+                handleInAppAuth(token); 
+            } else { 
+                hideAllScreens(); 
+                document.getElementById("auth-screen").classList.remove("hidden"); 
+            }
         }
 
         function processGoblinTag(code) {
@@ -540,8 +552,9 @@
             document.getElementById("goblin-score-box").className = `bg-slate-800 rounded-3xl p-8 border-2 shadow-2xl relative overflow-hidden ${pts > 0 ? 'border-emerald-500/50' : 'border-rose-500/50'}`;
         }
 
+        // URL 강제 복귀 수정
         function closeGoblinScreen() {
-            window.location.href = "https://boeing03.github.io/KURU18/?token=" + currentToken;
+            window.location.href = "?token=" + currentToken;
         }
 
         function hideAllScreens() {
@@ -808,7 +821,7 @@
                 initLeafletMap(course.lat, course.lng, userLat, userLng, course.name);
                 
             }, (err) => {
-                alert("GPS 신호를 가져올 수 없습니다. 브라우저 위치 권한을 반드시 허용해 주세요.");
+                alert("GPS 신호를 가져올 수 신호를 가져올 수 없습니다. 브라우저 위치 권한을 반드시 허용해 주세요.");
                 showLockSection();
             }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
@@ -848,7 +861,7 @@
             }
         }
 
-        // [버그 해결 1] 삭제되었던 보물상자 다이렉트 트리거 함수 복구!
+        // [버그 수정 완료] 보물상자 다이렉트 트리거 함수 복구!
         function triggerDirectTreasureGacha(courseId) {
             currentBaseCourseId = courseId; const course = coursesDB[courseId];
             document.getElementById("modal-badge").innerText = `${course.day}일차`;
@@ -1049,7 +1062,7 @@
 
         function backToChoice() { showChoiceSection(); }
 
-        // [버그 해결 2] 가챠 모달창 로딩 시 기존 구역들을 확실히 끄고 버튼을 비활성화!
+        // [버그 수정 완료] 가챠 시작 시 모든 UI 초기화 및 중복 클릭 방지 처리
         function startGachaSequence() {
             document.getElementById("modal-lock-section").classList.add("hidden"); 
             document.getElementById("modal-map-section").classList.add("hidden");
@@ -1057,9 +1070,8 @@
             document.getElementById("modal-quiz-section").classList.add("hidden"); 
             document.getElementById("modal-photo-section").classList.add("hidden"); 
             document.getElementById("modal-goblin-section").classList.add("hidden");
-            document.getElementById("modal-gacha-section").classList.remove("hidden");
             
-            // 더블 클릭으로 인한 점수 중복 지급을 방지하기 위해 룰렛 시작 시 버튼을 강제 숨김
+            document.getElementById("modal-gacha-section").classList.remove("hidden");
             document.getElementById("gacha-confirm-btn").classList.add("hidden");
             
             const rand = Math.random() * 100;
@@ -1149,8 +1161,11 @@
             });
         }
 
-        window.onload = function() { initData(); hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); };
+        // [핵심 변경부] 로드 시 자동 URL 체크 로직 100% 정상화
+        window.onload = function() { 
+            initData(); 
+            checkAuthentication(); 
+        };
     </script>
 </body>
 </html>
- 
