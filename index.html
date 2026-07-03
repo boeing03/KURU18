@@ -64,7 +64,6 @@
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight text-center leading-[1.25] mb-4">Your guide to effortless <br><span class="text-blue-600 bg-clip-text">history exploration</span></h1>
                 
-                <!-- 하이브리드 안내 문구로 변경 -->
                 <p class="text-slate-500 text-sm text-center leading-relaxed max-w-[280px] mb-8">
                     안드로이드 기기는 아래 버튼을 눌러 스캐너를 켜주세요.<br>
                     <span class="text-xs text-rose-500 font-semibold">(아이폰은 버튼을 누르지 말고 바탕화면에서 카드를 바로 태그하세요!)</span>
@@ -252,8 +251,6 @@
                         </div>
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 shadow-sm relative overflow-hidden h-[120px] flex flex-col justify-center">
                             <div class="absolute inset-0 bg-blue-500/5 animate-pulse"></div>
-                            
-                            <!-- 스캐너 상태 표시부 -->
                             <div id="goblin-scanner-spinner" class="w-10 h-10 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto mb-3 relative z-10"></div>
                             <p id="goblin-scanner-text" class="text-[11px] font-extrabold text-blue-600 relative z-10">안드로이드 스캐너 가동 중...</p>
                         </div>
@@ -433,19 +430,14 @@
             }
         });
 
-        // ---------------------------------------------------------------------
-        // [핵심 변경 1] 메인 로그인 Web NFC 하이브리드 로직
-        // ---------------------------------------------------------------------
         async function activateNfcReaderSession() {
             const spinner = document.getElementById("nfc-spinner");
             const statusText = document.getElementById("nfc-status-text");
             
-            // Web NFC 지원 브라우저 (안드로이드)
             if ('NDEFReader' in window) {
                 try {
                     const ndef = new NDEFReader();
                     await ndef.scan();
-                    
                     spinner.className = "w-6 h-6 rounded-full border-4 border-slate-100 border-t-emerald-500 animate-spin";
                     statusText.innerText = "NFC 스캐너 가동 중! 카드를 뒷면에 태그하세요.";
                     statusText.className = "text-xs font-bold text-emerald-600 animate-pulse";
@@ -455,17 +447,12 @@
                             if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
                                 const textDecoder = new TextDecoder(record.encoding || "utf-8");
                                 let urlData = textDecoder.decode(record.data);
-                                
                                 try {
                                     let urlObj = new URL(urlData);
                                     let token = urlObj.searchParams.get('token');
                                     let goblin = urlObj.searchParams.get('goblin');
                                     
-                                    if (goblin) {
-                                        processGoblinTag(goblin); // 고블린 태그
-                                    } else if (token) {
-                                        handleInAppAuth(token); // 화면 전환 없이 즉시 로그인
-                                    }
+                                    if (goblin) { processGoblinTag(goblin); } else if (token) { handleInAppAuth(token); }
                                 } catch(e) { console.error("URL 파싱 에러", e); }
                             }
                         }
@@ -476,14 +463,12 @@
                     statusText.className = "text-[11px] font-bold text-rose-500 leading-relaxed";
                 }
             } else {
-                // Web NFC 미지원 기기 (아이폰 등) 안내창
                 spinner.className = "hidden";
                 statusText.innerHTML = `⚠️ <b class="text-rose-500">아이폰(iOS) 또는 Web NFC 미지원 기기입니다.</b><br>현재 창에서는 NFC 스캐너를 켤 수 없습니다.<br><br>홈 화면(바탕화면)으로 나간 뒤, 카드를 뒷면에 태그하고<br>화면 상단에 뜨는 <b>[웹 사이트 알림창]</b>을 눌러주세요!`;
                 statusText.className = "text-[11px] font-medium text-slate-500 leading-relaxed";
             }
         }
 
-        // 현재 화면에서 깜빡임 없이 즉시 로그인시키는 함수
         function handleInAppAuth(token) {
             if (token === 'admin_secret') {
                 isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
@@ -496,9 +481,7 @@
                 } else {
                     triggerLoadingSequence();
                 }
-            } else {
-                alert("등록되지 않은 카드입니다.");
-            }
+            } else { alert("등록되지 않은 카드입니다."); }
         }
 
         function checkAuthentication() {
@@ -509,20 +492,10 @@
             const st2 = document.getElementById("admin-mock-location-toggle");
             if(st2) st2.checked = isMocked;
 
-            // 새 창으로 들어왔을 때 고블린 코드인지 확인
             if (goblinCode) { processGoblinTag(goblinCode); return; }
-
-            // 새 창으로 들어왔을 때 로그인 코드인지 확인
-            if (token) {
-                handleInAppAuth(token);
-            } else { 
-                hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); 
-            }
+            if (token) { handleInAppAuth(token); } else { hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); }
         }
 
-        // ---------------------------------------------------------------------
-        // 고블린 처리 로직
-        // ---------------------------------------------------------------------
         function processGoblinTag(code) {
             hideAllScreens();
             document.getElementById("goblin-result-screen").classList.remove("hidden");
@@ -712,7 +685,8 @@
                 let mainTreasureBtnHTML = "";
                 if (!pStatus) { mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-50 border border-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center opacity-60"><div><span class="text-sm grayscale">📦</span> <span>보물상자 (사진 승인 시 오픈)</span></div> <span>🔒</span></button>`;
                 } else if (pStatus === 'pending') { mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-50 border border-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center"><div><span class="text-sm">⏳</span> <span>스태프의 사진 심사 완료 후 활성화</span></div> <span>🔒</span></button>`;
-                } else if (pStatus === 'approved') { mainTreasureBtnHTML = `<button onclick="triggerDirectTreasureGacha('${courseId}')" class="w-full mt-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white font-extrabold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center treasure-glow transform scale-[1.01] transition-finez"><div><span class="text-sm animate-bounce">🎁</span> <span class="text-white">보물상자 오픈 활성화! (터치 시작)</span></div> <span>→</span></button>`;
+                } else if (pStatus === 'approved') { 
+                    mainTreasureBtnHTML = `<button onclick="triggerDirectTreasureGacha('${courseId}')" class="w-full mt-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white font-extrabold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center treasure-glow transform scale-[1.01] transition-finez"><div><span class="text-sm animate-bounce">🎁</span> <span class="text-white">보물상자 오픈 활성화! (터치 시작)</span></div> <span>→</span></button>`;
                 } else if (pStatus === 'claimed') { const savedGacha = currentUser.photoVerified[courseId] || {}; mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-800 text-slate-400 font-medium py-3 px-4 rounded-xl text-[11px] flex justify-between items-center shadow-inner"><div><span>💎</span> <span>보상 수령 완료: ${savedGacha.tier} (+${savedGacha.points}P)</span></div> <span>✓</span></button>`; }
 
                 const progressText = `퀴즈 완료: ${solvedCount}/4 문항 ${lockedCount > 0 ? `(잠금 ${lockedCount})` : ''}`;
@@ -759,9 +733,6 @@
             document.getElementById("modal-photo-section").classList.remove("hidden");
         }
 
-        // ---------------------------------------------------------------------
-        // [핵심 변경 2] 고블린 태그용 Web NFC 스캐너 활성화
-        // ---------------------------------------------------------------------
         async function goToGoblinSection() {
             document.getElementById("modal-branch-section").classList.add("hidden");
             document.getElementById("modal-goblin-section").classList.remove("hidden");
@@ -785,7 +756,7 @@
                                 try {
                                     let urlObj = new URL(urlData);
                                     let goblin = urlObj.searchParams.get('goblin');
-                                    if (goblin) processGoblinTag(goblin); // 새 창 열림 없이 현재 화면에서 즉시 변환
+                                    if (goblin) processGoblinTag(goblin); 
                                 } catch(e) {}
                             }
                         }
@@ -795,7 +766,6 @@
                     scannerText.className = "text-[11px] font-bold text-rose-500 relative z-10";
                 }
             } else {
-                // 아이폰용 안내
                 scannerSpinner.classList.add("hidden");
                 scannerText.innerHTML = `⚠️ <b class="text-rose-500">아이폰(iOS) 사용자는</b><br>현재 화면을 닫고 바탕화면에서 카드를 태그한 뒤<br>뜨는 알림창을 눌러주세요!`;
                 scannerText.className = "text-[11px] font-medium text-slate-500 leading-relaxed relative z-10";
@@ -876,6 +846,15 @@
             } else {
                 alert(`❌ 인증 불가!\n\n현재 목표 구역 반경 100m를 벗어나 있습니다.\n(현재 거리: ${currentCalculatedDistance}m)\n\n지도상의 파란색 원 안으로 진입한 후 다시 버튼을 눌러주세요.`);
             }
+        }
+
+        // [버그 해결 1] 삭제되었던 보물상자 다이렉트 트리거 함수 복구!
+        function triggerDirectTreasureGacha(courseId) {
+            currentBaseCourseId = courseId; const course = coursesDB[courseId];
+            document.getElementById("modal-badge").innerText = `${course.day}일차`;
+            document.getElementById("modal-location").innerText = course.name;
+            document.getElementById("quiz-modal").classList.remove("hidden");
+            startGachaSequence(); 
         }
 
         function openQuizModal(courseId) {
@@ -1070,10 +1049,18 @@
 
         function backToChoice() { showChoiceSection(); }
 
+        // [버그 해결 2] 가챠 모달창 로딩 시 기존 구역들을 확실히 끄고 버튼을 비활성화!
         function startGachaSequence() {
-            document.getElementById("modal-lock-section").classList.add("hidden"); document.getElementById("modal-map-section").classList.add("hidden");
-            document.getElementById("modal-branch-section").classList.add("hidden"); document.getElementById("modal-quiz-section").classList.add("hidden"); 
-            document.getElementById("modal-photo-section").classList.add("hidden"); document.getElementById("modal-gacha-section").classList.remove("hidden");
+            document.getElementById("modal-lock-section").classList.add("hidden"); 
+            document.getElementById("modal-map-section").classList.add("hidden");
+            document.getElementById("modal-branch-section").classList.add("hidden"); 
+            document.getElementById("modal-quiz-section").classList.add("hidden"); 
+            document.getElementById("modal-photo-section").classList.add("hidden"); 
+            document.getElementById("modal-goblin-section").classList.add("hidden");
+            document.getElementById("modal-gacha-section").classList.remove("hidden");
+            
+            // 더블 클릭으로 인한 점수 중복 지급을 방지하기 위해 룰렛 시작 시 버튼을 강제 숨김
+            document.getElementById("gacha-confirm-btn").classList.add("hidden");
             
             const rand = Math.random() * 100;
             if (rand < 1.0) finalRolledReward = gachaTiers[0]; else if (rand < 51.0) finalRolledReward = gachaTiers[1];
