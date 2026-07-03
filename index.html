@@ -31,7 +31,7 @@
     <div class="mobile-container flex flex-col justify-between relative bg-white">
         <div class="finez-bg"></div><div class="gradient-blob-1"></div><div class="gradient-blob-2"></div>
         
-        <!-- [신규 화면] 황금 고블린 결과 풀스크린 모달 -->
+        <!-- 황금 고블린 결과 풀스크린 모달 -->
         <div id="goblin-result-screen" class="hidden absolute inset-0 z-[200] bg-slate-900 flex flex-col justify-center items-center p-6">
             <div class="text-center space-y-6 w-full max-w-sm">
                 <div id="goblin-result-icon" class="text-7xl animate-bounce drop-shadow-2xl">👺</div>
@@ -63,13 +63,18 @@
                     <span class="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span><span class="text-xs font-semibold text-slate-600 tracking-tight">2026 History Race System</span>
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight text-center leading-[1.25] mb-4">Your guide to effortless <br><span class="text-blue-600 bg-clip-text">history exploration</span></h1>
-                <p class="text-slate-500 text-sm text-center leading-relaxed max-w-[280px] mb-8">NFC 태깅 시스템을 수동 활성화한 후, 발급받은 답사 카드를 기기에 태그해 주세요.</p>
+                
+                <!-- 하이브리드 안내 문구로 변경 -->
+                <p class="text-slate-500 text-sm text-center leading-relaxed max-w-[280px] mb-8">
+                    안드로이드 기기는 아래 버튼을 눌러 스캐너를 켜주세요.<br>
+                    <span class="text-xs text-rose-500 font-semibold">(아이폰은 버튼을 누르지 말고 바탕화면에서 카드를 바로 태그하세요!)</span>
+                </p>
                 
                 <button onclick="activateNfcReaderSession()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl text-sm shadow-lg transform transition active:scale-95 mb-4">
                     📢 NFC 카드 인식 장치 활성화하기 (클릭)
                 </button>
 
-                <div class="w-full bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col items-center justify-center text-center space-y-2 shadow-inner">
+                <div class="w-full bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col items-center justify-center text-center space-y-2 shadow-inner h-[80px]">
                     <div id="nfc-spinner" class="w-6 h-6 rounded-full border-2 border-slate-200 border-t-slate-400"></div>
                     <p id="nfc-status-text" class="text-xs font-bold text-slate-400">위 버튼을 눌러 인프라를 깨워주세요.</p>
                 </div>
@@ -243,13 +248,14 @@
                         <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">👺</div>
                         <div class="space-y-2">
                             <p class="text-base font-black text-amber-600 tracking-tight">황금 고블린 출몰 지역!</p>
-                            <p class="text-xs text-slate-500 leading-relaxed font-medium">마을을 배회하는 고블린(스태프)을 찾아<br>고블린의 전용 NFC 카드를 스마트폰에 태그하세요.</p>
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">마을을 배회하는 고블린(스태프)을 찾아<br>고블린의 카드를 스마트폰 뒷면에 태그하세요.</p>
                         </div>
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 shadow-sm relative overflow-hidden">
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 shadow-sm relative overflow-hidden h-[120px] flex flex-col justify-center">
                             <div class="absolute inset-0 bg-blue-500/5 animate-pulse"></div>
-                            <div class="w-10 h-10 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto mb-3 relative z-10"></div>
-                            <p class="text-[11px] font-extrabold text-blue-600 relative z-10">NFC 태그 스캔 대기 중...</p>
-                            <p class="text-[10px] text-slate-400 mt-1 relative z-10">태그 즉시 무작위 보너스나 폭탄이 적용됩니다!</p>
+                            
+                            <!-- 스캐너 상태 표시부 -->
+                            <div id="goblin-scanner-spinner" class="w-10 h-10 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto mb-3 relative z-10"></div>
+                            <p id="goblin-scanner-text" class="text-[11px] font-extrabold text-blue-600 relative z-10">안드로이드 스캐너 가동 중...</p>
                         </div>
                         <button onclick="showChoiceSection()" class="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 font-bold py-3 rounded-xl text-[11px] transition-finez shadow-sm">← 미션 선택으로 돌아가기</button>
                     </div>
@@ -379,13 +385,11 @@
         
         let verifyMap = null; let mapTargetMarker = null; let mapUserMarker = null; let mapTargetCircle = null;
         let currentCalculatedDistance = 999999;
-        
         let pendingQuizQueue = []; 
 
         function initData() {
             const savedDB = localStorage.getItem("quiz_users_db");
             if (savedDB) { try { usersDB = JSON.parse(savedDB); } catch(e) { usersDB = {...defaultUsersDB}; } } else { localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); }
-
             Object.keys(usersDB).forEach(key => {
                 let u = usersDB[key];
                 if (!u.failedAttempts) u.failedAttempts = {}; if (!u.photoStatus) u.photoStatus = {};
@@ -393,7 +397,6 @@
             });
             const savedGps = localStorage.getItem("gps_verified_quizzes");
             if (savedGps) locationVerifiedQuizzes = JSON.parse(savedGps);
-
             if (!localStorage.getItem("global_mock_location")) localStorage.setItem("global_mock_location", "false");
         }
 
@@ -430,13 +433,72 @@
             }
         });
 
-        function activateNfcReaderSession() {
+        // ---------------------------------------------------------------------
+        // [핵심 변경 1] 메인 로그인 Web NFC 하이브리드 로직
+        // ---------------------------------------------------------------------
+        async function activateNfcReaderSession() {
             const spinner = document.getElementById("nfc-spinner");
             const statusText = document.getElementById("nfc-status-text");
-            spinner.className = "w-6 h-6 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin";
-            statusText.innerText = "NFC 안테나 동기화 완료! 카드를 기기에 태그해 주세요.";
-            statusText.className = "text-xs font-bold text-blue-600 animate-pulse";
-            setTimeout(() => { checkAuthentication(); }, 500);
+            
+            // Web NFC 지원 브라우저 (안드로이드)
+            if ('NDEFReader' in window) {
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+                    
+                    spinner.className = "w-6 h-6 rounded-full border-4 border-slate-100 border-t-emerald-500 animate-spin";
+                    statusText.innerText = "NFC 스캐너 가동 중! 카드를 뒷면에 태그하세요.";
+                    statusText.className = "text-xs font-bold text-emerald-600 animate-pulse";
+
+                    ndef.addEventListener("reading", ({ message }) => {
+                        for (const record of message.records) {
+                            if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
+                                const textDecoder = new TextDecoder(record.encoding || "utf-8");
+                                let urlData = textDecoder.decode(record.data);
+                                
+                                try {
+                                    let urlObj = new URL(urlData);
+                                    let token = urlObj.searchParams.get('token');
+                                    let goblin = urlObj.searchParams.get('goblin');
+                                    
+                                    if (goblin) {
+                                        processGoblinTag(goblin); // 고블린 태그
+                                    } else if (token) {
+                                        handleInAppAuth(token); // 화면 전환 없이 즉시 로그인
+                                    }
+                                } catch(e) { console.error("URL 파싱 에러", e); }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    spinner.className = "hidden";
+                    statusText.innerHTML = `NFC 권한이 거부되었거나 오류가 발생했습니다.<br><span class="text-slate-400 font-normal">바탕화면에서 카드를 태그해 주세요.</span>`;
+                    statusText.className = "text-[11px] font-bold text-rose-500 leading-relaxed";
+                }
+            } else {
+                // Web NFC 미지원 기기 (아이폰 등) 안내창
+                spinner.className = "hidden";
+                statusText.innerHTML = `⚠️ <b class="text-rose-500">아이폰(iOS) 또는 Web NFC 미지원 기기입니다.</b><br>현재 창에서는 NFC 스캐너를 켤 수 없습니다.<br><br>홈 화면(바탕화면)으로 나간 뒤, 카드를 뒷면에 태그하고<br>화면 상단에 뜨는 <b>[웹 사이트 알림창]</b>을 눌러주세요!`;
+                statusText.className = "text-[11px] font-medium text-slate-500 leading-relaxed";
+            }
+        }
+
+        // 현재 화면에서 깜빡임 없이 즉시 로그인시키는 함수
+        function handleInAppAuth(token) {
+            if (token === 'admin_secret') {
+                isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
+            } else if (usersDB[token]) {
+                isAdmin = false; currentToken = token; currentUser = usersDB[token];
+                localStorage.setItem("active_user_token", token);
+                if (!currentUser.isConfigured) {
+                    hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
+                    document.getElementById("setup-team-input").value = currentUser.team;
+                } else {
+                    triggerLoadingSequence();
+                }
+            } else {
+                alert("등록되지 않은 카드입니다.");
+            }
         }
 
         function checkAuthentication() {
@@ -447,25 +509,20 @@
             const st2 = document.getElementById("admin-mock-location-toggle");
             if(st2) st2.checked = isMocked;
 
-            if (goblinCode) {
-                processGoblinTag(goblinCode);
-                return; 
-            }
+            // 새 창으로 들어왔을 때 고블린 코드인지 확인
+            if (goblinCode) { processGoblinTag(goblinCode); return; }
 
-            if (token === 'admin_secret') {
-                isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
-            } else if (token && usersDB[token]) {
-                isAdmin = false; currentToken = token; currentUser = usersDB[token];
-                localStorage.setItem("active_user_token", token); 
-                
-                if (!currentUser.isConfigured) {
-                    hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
-                    document.getElementById("setup-team-input").value = currentUser.team;
-                } else { triggerLoadingSequence(); }
-            } else { hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); }
+            // 새 창으로 들어왔을 때 로그인 코드인지 확인
+            if (token) {
+                handleInAppAuth(token);
+            } else { 
+                hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden"); 
+            }
         }
 
-        // [핵심] 고블린 태그 및 상세 점수 기록 로직
+        // ---------------------------------------------------------------------
+        // 고블린 처리 로직
+        // ---------------------------------------------------------------------
         function processGoblinTag(code) {
             hideAllScreens();
             document.getElementById("goblin-result-screen").classList.remove("hidden");
@@ -498,9 +555,7 @@
             else { pts = 10; title = "소소한 동전 줍줍!"; colorClass = "text-blue-400"; icon="🪙"; }
 
             currentUser.score += pts;
-            // [버그 수정 완료] 영수증에 띄우기 위해 구체적인 명칭과 포인트값을 객체로 저장합니다!
             currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
-            
             usersDB[currentToken] = currentUser;
             localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
 
@@ -519,8 +574,7 @@
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
             document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("app-screen").classList.add("hidden");
-            document.getElementById("admin-screen").classList.add("hidden");
-            document.getElementById("goblin-result-screen").classList.add("hidden");
+            document.getElementById("admin-screen").classList.add("hidden"); document.getElementById("goblin-result-screen").classList.add("hidden");
         }
 
         function triggerLoadingSequence() {
@@ -705,9 +759,47 @@
             document.getElementById("modal-photo-section").classList.remove("hidden");
         }
 
-        function goToGoblinSection() {
+        // ---------------------------------------------------------------------
+        // [핵심 변경 2] 고블린 태그용 Web NFC 스캐너 활성화
+        // ---------------------------------------------------------------------
+        async function goToGoblinSection() {
             document.getElementById("modal-branch-section").classList.add("hidden");
             document.getElementById("modal-goblin-section").classList.remove("hidden");
+            
+            const scannerText = document.getElementById("goblin-scanner-text");
+            const scannerSpinner = document.getElementById("goblin-scanner-spinner");
+
+            if ('NDEFReader' in window) {
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+                    scannerText.innerText = "안드로이드 스캐너 가동 중! 스마트폰 뒷면에 고블린 카드를 태그하세요.";
+                    scannerText.className = "text-[11px] font-extrabold text-emerald-600 relative z-10 animate-pulse";
+                    scannerSpinner.className = "w-10 h-10 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3 relative z-10";
+
+                    ndef.addEventListener("reading", ({ message }) => {
+                        for (const record of message.records) {
+                            if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
+                                const textDecoder = new TextDecoder(record.encoding || "utf-8");
+                                let urlData = textDecoder.decode(record.data);
+                                try {
+                                    let urlObj = new URL(urlData);
+                                    let goblin = urlObj.searchParams.get('goblin');
+                                    if (goblin) processGoblinTag(goblin); // 새 창 열림 없이 현재 화면에서 즉시 변환
+                                } catch(e) {}
+                            }
+                        }
+                    });
+                } catch (e) { 
+                    scannerText.innerText = "NFC 접근 실패. 바탕화면에서 태그하세요.";
+                    scannerText.className = "text-[11px] font-bold text-rose-500 relative z-10";
+                }
+            } else {
+                // 아이폰용 안내
+                scannerSpinner.classList.add("hidden");
+                scannerText.innerHTML = `⚠️ <b class="text-rose-500">아이폰(iOS) 사용자는</b><br>현재 화면을 닫고 바탕화면에서 카드를 태그한 뒤<br>뜨는 알림창을 눌러주세요!`;
+                scannerText.className = "text-[11px] font-medium text-slate-500 leading-relaxed relative z-10";
+            }
         }
 
         function openLocationMap() {
@@ -1011,7 +1103,6 @@
         let activeAccordionToken = null;
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
 
-        // [핵심 업데이트] 고블린 태그 시 리더보드 상세 내역에 영수증 표기 로직 추가
         function renderLeaderboard() {
             const listContainer = document.getElementById("leaderboard-list"); if (!listContainer) return;
             listContainer.innerHTML = ""; let sortedUsers = Object.keys(usersDB).map(k => ({token: k, ...usersDB[k]})).sort((a, b) => b.score - a.score);
@@ -1032,12 +1123,10 @@
                     if (isMe) {
                         let photoReceipts = "";
                         
-                        // [신규] 고블린 태그 기록 및 보물상자 기록 합산 렌더링
                         if(user.photoVerified) { 
                             Object.keys(user.photoVerified).forEach(cId => { 
                                 if(cId.endsWith("_report_done")) return; 
                                 
-                                // 고블린 이벤트 영수증 처리 (빨간색/초록색 분기)
                                 if(cId.startsWith("goblin_")) {
                                     const gInfo = user.photoVerified[cId];
                                     if(gInfo && typeof gInfo === 'object') {
@@ -1050,7 +1139,6 @@
                                     return;
                                 }
 
-                                // 일반 보물상자 영수증 처리
                                 const cInfo = coursesDB[cId]; const gInfo = user.photoVerified[cId]; 
                                 if(cInfo && gInfo && gInfo.points !== undefined) photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>🎁 상자: ${cInfo.name}</span><span class="font-mono text-amber-600 font-bold">+${gInfo.points}P</span></div>`; 
                             }); 
