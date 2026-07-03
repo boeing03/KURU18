@@ -237,7 +237,7 @@
             // 1일차 코스 퀴즈
             { id: "q_01_1", course: "course_01", step: 1, question: "남원 유곡리와 두락리 고분군은 전라북도 지역에서 가야 세력의 존재를 증명하는 대표적인 유적입니다. 이 고분군을 축조한 세력으로 가장 유력한 가야 연맹체는 어디일까요?", options: ["금관가야", "대가야", "아라가야", "성산가야"], answer: "대가야", points: 15, hint: "고령 지역을 중심으로 후기 가야 연맹을 주도했던 가야 세력입니다." },
             { id: "q_01_2", course: "course_01", step: 2, question: "이 고분군에서 출토된 유물 중 백제 무령왕릉 출토품과 매우 유사하여, 당시 가야 세력이 백제와도 긴밀히 교류했음을 보여주는 대표적인 장신구는 무엇일까요?", options: ["금동관모", "은제 관장식", "청동거울", "철제 갑옷"], answer: "금동관모", points: 15, hint: "머리에 쓰는 모자 형태의 화려한 금동제 장식품입니다." },
-            { id: "q_01_3", course: "course_01", step: 3, question: "유곡리와 두락리 고분군의 주요 무덤 구조로, 긴 네모꼴의 돌방을 만들고 한쪽 벽에 문을 만들어 추가 매장이 가능하도록 설계한 무덤 양식은 무엇일까요?", options: ["돌널무덤", "독무덤", "굴식 돌방무덤", "돌지방 무덤"], answer: "굴식 돌방무덤", points: 20, hint: "백제와 고구려의 대표적인 무덤 구조이자 가야 후기에 도입된 양식입니다." },
+            { id: "q_01_3", course: "course_01", step: 3, question: "유곡리와 두락리 고분군의 주요 무덤 구조로, 긴 네모꼴의 돌방을 만들고 한쪽 벽에 문 문을 만들어 추가 매장이 가능하도록 설계한 무덤 양식은 무엇일까요?", options: ["돌널무덤", "독무덤", "굴식 돌방무덤", "돌지방 무덤"], answer: "굴식 돌방무덤", points: 20, hint: "백제와 고구려의 대표적인 무덤 구조이자 가야 후기에 도입된 양식입니다." },
             { id: "q_01_4", course: "course_01", step: 4, question: "이 고분군은 호남 지역 가야 유적 중 최초로 그 학술적 가치를 인정받아 국가 지정 문화재 '이것'으로 지정되었습니다. 무엇일까요?", options: ["보물", "사적", "천연기념물", "명승"], answer: "사적", points: 20, hint: "역사적으로 기념이 될 만한 유적지에 지정하는 문화재 등급입니다." },
             
             { id: "q_02_1", course: "course_02", step: 1, question: "지리산 자락에 위치한 실상사는 통일신라 선종 구산선문 중 가장 먼저 문을 연 최초의 가람입니다. 이 산문의 이름은 무엇일까요?", options: ["가지산문", "실상산문", "동리산문", "봉림산문"], answer: "실상산문", points: 15, hint: "실상사의 이름을 그대로 딴 선종의 시초 산문입니다." },
@@ -322,13 +322,11 @@
             const savedGps = localStorage.getItem("gps_verified_quizzes");
             if (savedGps) locationVerifiedQuizzes = JSON.parse(savedGps);
 
-            // [수정 완정 보강] 최초 접근 시 강제로 세션 동기화 값 false 기입
             if (!localStorage.getItem("global_mock_location")) {
                 localStorage.setItem("global_mock_location", "false");
             }
         }
 
-        // [핵심 조건 버그 전면 해결] 문자열 비교를 완전 엄격하게 분리 처리
         function checkGpsSessionValid(courseId) {
             if (localStorage.getItem("global_mock_location") === "true") return true; 
             
@@ -815,7 +813,7 @@
 
             const tDisp = document.getElementById("gacha-slot-tier"), pDisp = document.getElementById("gacha-slot-pts");
             tDisp.className = "text-2xl font-black tracking-tight gacha-roll text-slate-400";
-            let tc = 0; if (rou rouletteInterval) clearInterval(rouletteInterval);
+            let tc = 0; if (rouletteInterval) clearInterval(rouletteInterval); // 오타 해결 구역!
             rouletteInterval = setInterval(() => {
                 const mock = gachaTiers[Math.floor(Math.random() * gachaTiers.length)];
                 tDisp.innerText = mock.name; pDisp.innerText = `${Math.floor(Math.random()*120)} PTS`;
