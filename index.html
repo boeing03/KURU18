@@ -153,7 +153,7 @@
                         <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-xl text-blue-600">📍</div>
                         <div class="space-y-1">
                             <p class="text-sm font-bold text-slate-900">도착 여부를 인증해 주세요</p>
-                            <p class="text-xs text-slate-400 leading-relaxed">목표 장소 반경 100m 이내에서 스마트폰 GPS 인증이 완료되어야 미션 메뉴가 해제됩니다.</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">목표 장소 반경 200m 이내에서 스마트폰 GPS 인증이 완료되어야 미션 메뉴가 해제됩니다.</p>
                         </div>
                         <button onclick="attemptLocationVerify()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full text-xs shadow-md">현장 위치 인증하기</button>
                     </div>
@@ -234,10 +234,9 @@
         };
 
         const quizzesDB = [
-            // 1일차 코스 퀴즈
             { id: "q_01_1", course: "course_01", step: 1, question: "남원 유곡리와 두락리 고분군은 전라북도 지역에서 가야 세력의 존재를 증명하는 대표적인 유적입니다. 이 고분군을 축조한 세력으로 가장 유력한 가야 연맹체는 어디일까요?", options: ["금관가야", "대가야", "아라가야", "성산가야"], answer: "대가야", points: 15, hint: "고령 지역을 중심으로 후기 가야 연맹을 주도했던 가야 세력입니다." },
             { id: "q_01_2", course: "course_01", step: 2, question: "이 고분군에서 출토된 유물 중 백제 무령왕릉 출토품과 매우 유사하여, 당시 가야 세력이 백제와도 긴밀히 교류했음을 보여주는 대표적인 장신구는 무엇일까요?", options: ["금동관모", "은제 관장식", "청동거울", "철제 갑옷"], answer: "금동관모", points: 15, hint: "머리에 쓰는 모자 형태의 화려한 금동제 장식품입니다." },
-            { id: "q_01_3", course: "course_01", step: 3, question: "유곡리와 두락리 고분군의 주요 무덤 구조로, 긴 네모꼴의 돌방을 만들고 한쪽 벽에 문 문을 만들어 추가 매장이 가능하도록 설계한 무덤 양식은 무엇일까요?", options: ["돌널무덤", "독무덤", "굴식 돌방무덤", "돌지방 무덤"], answer: "굴식 돌방무덤", points: 20, hint: "백제와 고구려의 대표적인 무덤 구조이자 가야 후기에 도입된 양식입니다." },
+            { id: "q_01_3", course: "course_01", step: 3, question: "유곡리와 두락리 고분군의 주요 무덤 구조로, 긴 네모꼴의 돌방을 만들고 한쪽 벽에 문을 만들어 추가 매장이 가능하도록 설계한 무덤 양식은 무엇일까요?", options: ["돌널무덤", "독무덤", "굴식 돌방무덤", "돌지방 무덤"], answer: "굴식 돌방무덤", points: 20, hint: "백제와 고구려의 대표적인 무덤 구조이자 가야 후기에 도입된 양식입니다." },
             { id: "q_01_4", course: "course_01", step: 4, question: "이 고분군은 호남 지역 가야 유적 중 최초로 그 학술적 가치를 인정받아 국가 지정 문화재 '이것'으로 지정되었습니다. 무엇일까요?", options: ["보물", "사적", "천연기념물", "명승"], answer: "사적", points: 20, hint: "역사적으로 기념이 될 만한 유적지에 지정하는 문화재 등급입니다." },
             
             { id: "q_02_1", course: "course_02", step: 1, question: "지리산 자락에 위치한 실상사는 통일신라 선종 구산선문 중 가장 먼저 문을 연 최초의 가람입니다. 이 산문의 이름은 무엇일까요?", options: ["가지산문", "실상산문", "동리산문", "봉림산문"], answer: "실상산문", points: 15, hint: "실상사의 이름을 그대로 딴 선종의 시초 산문입니다." },
@@ -250,7 +249,6 @@
             { id: "q_03_3", course: "course_03", step: 3, question: "광한루 앞마당에는 천하를 본뜬 호수가 있고, 호수 위에는 은하수를 상징하는 돌다리가 놓여 있어 성춘향과 이몽룡의 사랑 무대가 되었습니다. 이 다리의 이름은 무엇일까요?", options: ["오작교", "징검다리", "반월교", "십리교"], answer: "오작교", points: 20, hint: "견우와 직녀가 칠월칠석에 만난다는 전설 속 다리와 같은 이름입니다." },
             { id: "q_03_4", course: "course_03", step: 4, question: "광한루는 조선 정유재란 당시 화마로 인해 한 차례 소실되는 비극을 겪었습니다. 이후 조선 인조 대에 다시 복원된 연도는 언제일까요?", options: ["1626년", "1592년", "1419년", "1720년"], answer: "1626년", points: 20, hint: "17세기 초반인 조선 인조 4년에 남원부사 신감이 중건했습니다." },
 
-            // 2일차 코스 퀴즈
             { id: "q_04_1", course: "course_04", step: 1, question: "순천왜성은 정유재란 당시 조·명 연합군과 왜군 사이에 가장 치열한 전투가 벌어졌던 전장입니다. 당시 이곳에서 농성하며 저항했던 왜군의 중심 장수는 누구일까요?", options: ["고니시 유키나가", "가토 기요마사", "도요토미 히데요시", "시마즈 요시히로"], answer: "고니시 유키나가", points: 15, hint: "임진왜란 당시 제1군을 이끌고 선봉에 섰던 왜장입니다." },
             { id: "q_04_2", course: "course_04", step: 2, question: "순천왜성 전투에서 왜군을 격퇴하기 위해 조선 수군을 이끌고 바다를 공략하다가 결국 노량해전에서 전사하신 조선의 성웅은 누구일까요?", options: ["이순신 장군", "원균 장군", "권율 장군", "곽재우 장군"], answer: "이순신 장군", points: 15, hint: "거북선을 제작하고 한산도 대첩을 이끄신 삼도수군통제사입니다." },
             { id: "q_04_3", course: "course_04", step: 3, question: "순천왜성 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
@@ -266,7 +264,6 @@
             { id: "q_06_3", course: "course_06", step: 3, question: "낙안읍성 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
             { id: "q_06_4", course: "course_06", step: 4, question: "낙안읍성 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
 
-            // 3일차 코스 퀴즈
             { id: "q_07_1", course: "course_07", step: 1, question: "구례 화엄사는 민족의 영산 지리산에 위치한 유서 깊은 사찰입니다. 신라 시대 의상대사가 화엄 사상을 널리 펼치기 위해 지은, 사방 벽면에 화엄경을 돌에 새겨 붙인 전각의 흔적은 무엇일까요?", options: ["화엄경석(각황전)", "대웅전", "명부전", "나한전"], answer: "화엄경석(각황전)", points: 15, hint: "조선 시대에 중건된 각황전 내부에 그 파편들이 보관되어 있습니다." },
             { id: "q_07_2", course: "course_07", step: 2, question: "화엄사 퀴즈 2단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 15, hint: "힌트 내용" },
             { id: "q_07_3", course: "course_07", step: 3, question: "화엄사 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
@@ -329,10 +326,8 @@
 
         function checkGpsSessionValid(courseId) {
             if (localStorage.getItem("global_mock_location") === "true") return true; 
-            
             const timestamp = locationVerifiedQuizzes[courseId];
             if (!timestamp || isNaN(timestamp)) return false; 
-            
             return (Date.now() - Number(timestamp)) < 2100000; 
         }
 
@@ -813,7 +808,7 @@
 
             const tDisp = document.getElementById("gacha-slot-tier"), pDisp = document.getElementById("gacha-slot-pts");
             tDisp.className = "text-2xl font-black tracking-tight gacha-roll text-slate-400";
-            let tc = 0; if (rouletteInterval) clearInterval(rouletteInterval); // 오타 해결 구역!
+            let tc = 0; if (rouletteInterval) clearInterval(rouletteInterval);
             rouletteInterval = setInterval(() => {
                 const mock = gachaTiers[Math.floor(Math.random() * gachaTiers.length)];
                 tDisp.innerText = mock.name; pDisp.innerText = `${Math.floor(Math.random()*120)} PTS`;
@@ -833,15 +828,43 @@
             updateHeaderUI(); closeModal();
         }
 
+        // [핵심] 하버사인 거리 계산 로직이 통합된 위치 검증 시스템
         function attemptLocationVerify() {
             if (localStorage.getItem("global_mock_location") === "true") {
-                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
+                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); 
+                localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
                 showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList(); return;
             }
+
+            const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+
             navigator.geolocation.getCurrentPosition((pos) => {
-                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
-                showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList();
-            }, (err) => alert("GPS 신호 획득 실패! 스태프에게 원격 마스터 승인을 요청하세요."));
+                const userLat = pos.coords.latitude;
+                const userLng = pos.coords.longitude;
+                const course = coursesDB[currentBaseCourseId];
+                
+                const R = 6371e3; 
+                const radLat1 = userLat * Math.PI / 180;
+                const radLat2 = course.lat * Math.PI / 180;
+                const deltaLat = (course.lat - userLat) * Math.PI / 180;
+                const deltaLng = (course.lng - userLng) * Math.PI / 180;
+                
+                const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                          Math.cos(radLat1) * Math.cos(radLat2) *
+                          Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const distance = Math.round(R * c); 
+                
+                if (distance <= 200) { 
+                    locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); 
+                    localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
+                    showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList();
+                } else {
+                    alert(`❌ 위치 인증 실패!\n\n현재 계신 곳은 [${course.name}] 중심부에서 약 ${distance}m 떨어져 있습니다.\n목표 장소 반경 200m 이내로 이동하신 후 다시 시도해 주세요.`);
+                }
+            }, (err) => {
+                alert("GPS 신호 획득 실패! 스마트폰의 위치(GPS) 기능을 켜고 브라우저 권한을 허용해 주세요.");
+            }, gpsOptions);
         }
 
         let activeAccordionToken = null;
