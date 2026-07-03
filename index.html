@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finez Honam - 통합 답사 관리 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap');
+        
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .mobile-container { max-width: 480px; min-height: 100vh; margin: 0 auto; background-color: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden; }
+        .finez-bg { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px); background-size: 30px 30px; pointer-events: none; z-index: 0; }
+        .gradient-blob-1 { position: absolute; bottom: -50px; left: -100px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(255, 255, 255, 0) 70%); filter: blur(40px); pointer-events: none; z-index: 0; }
+        .gradient-blob-2 { position: absolute; top: 20%; right: -120px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(249, 115, 22, 0.09) 0%, rgba(255, 255, 255, 0) 70%); filter: blur(40px); pointer-events: none; z-index: 0; }
+        .transition-finez { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes customShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .shake-effect { animation: customShake 0.15s ease-in-out 2; }
+        .gacha-roll { animation: pulse 0.1s infinite; }
+        .treasure-glow { box-shadow: 0 0 20px 5px rgba(251, 191, 36, 0.35); animation: pulse 2s infinite; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container flex flex-col justify-between relative bg-white">
+        <div class="finez-bg"></div><div class="gradient-blob-1"></div><div class="gradient-blob-2"></div>
+        
+        <!-- [화면 1] NFC 대기 및 활성화 메인화면 (아이폰 대응 수동 로그인 추가) -->
+        <div id="auth-screen" class="hidden flex-1 flex flex-col justify-between p-6 relative z-10">
+            <div class="flex justify-center mt-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center shadow-md"><span class="text-white font-black text-sm tracking-tighter">F</span></div>
+                    <span class="font-extrabold text-slate-900 tracking-tight text-lg">Finez Honam</span>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col items-center justify-center my-auto px-2">
+                <div class="inline-flex items-center space-x-1.5 bg-slate-50 border border-slate-100 rounded-full px-3 py-1 mb-6 shadow-sm">
+                    <span class="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse"></span><span class="text-xs font-semibold text-slate-600 tracking-tight">2026 History Race System</span>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight text-center leading-[1.25] mb-4">Your guide to effortless <br><span class="text-blue-600 bg-clip-text">history exploration</span></h1>
+                <p class="text-slate-500 text-sm text-center leading-relaxed max-w-[280px] mb-8">NFC 태깅 시스템을 수동 활성화한 후, 발급받은 답사 카드를 기기에 태그해 주세요.</p>
+                
+                <!-- 아이폰 및 안드로이드 수동 세션 트리거 버튼 -->
+                <button onclick="activateNfcReaderSession()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl text-sm shadow-lg transform transition active:scale-95 mb-4">
+                    📢 NFC 카드 인식 장치 활성화하기 (클릭)
+                </button>
+
+                <div class="w-full bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col items-center justify-center text-center space-y-2 shadow-inner">
+                    <div id="nfc-spinner" class="w-6 h-6 rounded-full border-2 border-slate-200 border-t-slate-400"></div>
+                    <p id="nfc-status-text" class="text-xs font-bold text-slate-400">위 버튼을 눌러 인프라를 깨워주세요.</p>
+                </div>
+            </div>
+            <div class="text-center text-[10px] text-slate-300 pb-2">© 2026 Finez Honam System. All Rights Reserved.</div>
+        </div>
+
+        <!-- [화면 2] 초기 팀 이름 및 조원 등록 설정 화면 -->
+        <div id="setup-screen" class="hidden flex-1 flex flex-col justify-between p-6 relative z-10">
+            <div class="flex justify-center mt-4">
+                <div class="flex items-center space-x-1.5"><div class="w-5 h-5 bg-blue-600 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">F</span></div><span class="font-bold text-slate-400 text-xs tracking-tight">Team Profile Setup</span></div>
+            </div>
+            <div class="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto space-y-6">
+                <div class="text-center space-y-2"><h2 class="text-2xl font-black text-slate-900 tracking-tight">우리 팀 정보 등록 📝</h2><p class="text-xs text-slate-400">답사 레이스에서 사용할 조 이름과 조원 명단을 적어주세요.</p></div>
+                <div class="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm space-y-4">
+                    <div class="space-y-1.5"><label class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">조 이름</label><input type="text" id="setup-team-input" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none" placeholder="예: 1조 / 대동여지도조"></div>
+                    <div class="space-y-1.5"><label class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">참가 조원 명단</label><textarea id="setup-members-input" rows="3" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 outline-none resize-none" placeholder="조원 이름을 쉼표(,)로 구분해서 적어주세요."></textarea></div>
+                </div>
+                <button onclick="saveTeamSetup()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-full text-xs shadow-md">설정 완료 및 레이스 시작하기 →</button>
+            </div>
+        </div>
+
+        <!-- [화면 3] 로딩 대기 화면 -->
+        <div id="loading-screen" class="hidden flex-1 flex flex-col items-center justify-center p-6 relative z-10 bg-white">
+            <div class="space-y-6 text-center flex flex-col items-center">
+                <div class="w-10 h-10 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
+                <div class="space-y-1.5"><h3 class="text-base font-bold text-slate-900 tracking-tight" id="loading-title">위치 동기화 인프라 구성 중...</h3><p class="text-xs text-slate-400">남원·순천·구례 매치 서버에 보안 세션을 연결하고 있습니다.</p></div>
+            </div>
+        </div>
+
+        <!-- [화면 4] 학생 메인 대시보드 화면 -->
+        <div id="app-screen" class="hidden flex-1 flex flex-col relative z-10">
+            <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 p-4 sticky top-0 z-20 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">F</span></div>
+                    <div><h2 class="font-bold text-slate-900 text-sm tracking-tight" id="user-info-text">1조</h2><p class="text-[10px] text-slate-400 -mt-0.5" id="user-members-text">조원 정보 로딩 중</p></div>
+                </div>
+                <div class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md">💰 <span id="user-score">0</span> PTS</div>
+            </header>
+
+            <div class="px-4 py-3 bg-white border-b border-slate-100 sticky top-[61px] z-20">
+                <div class="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/30">
+                    <button id="tab-quiz-btn" onclick="switchTab('quiz')" class="flex-1 py-2 text-center text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm">📝 퀴즈 매치</button>
+                    <button id="tab-rank-btn" onclick="switchTab('rank')" class="flex-1 py-2 text-center text-xs font-bold rounded-lg text-slate-500 hover:text-slate-900">🏆 실시간 리더보드</button>
+                </div>
+            </div>
+
+            <main class="flex-1 p-4 overflow-y-auto pb-24">
+                <div id="tab-quiz-content" class="space-y-4">
+                    <div class="flex space-x-2 overflow-x-auto pb-1">
+                        <button id="day1-btn" onclick="switchDay(1)" class="px-4 py-2 text-xs font-bold rounded-full bg-slate-900 text-white">1일차 코스</button>
+                        <button id="day2-btn" onclick="switchDay(2)" class="px-4 py-2 text-xs font-bold rounded-full bg-slate-100 text-slate-600">2일차 코스</button>
+                        <button id="day3-btn" onclick="switchDay(3)" class="px-4 py-2 text-xs font-bold rounded-full bg-slate-100 text-slate-600">3일차 코스</button>
+                    </div>
+                    <div id="quiz-list" class="space-y-3"></div>
+                </div>
+
+                <div id="tab-rank-content" class="hidden space-y-4">
+                    <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-5 rounded-3xl text-white shadow-xl">
+                        <p class="text-[11px] text-slate-400 font-medium tracking-wider uppercase">Current Match Leader</p>
+                        <h2 class="text-2xl font-black tracking-tight mt-1" id="top-team-text">1조 (0 PTS)</h2>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-100 divide-y divide-slate-50 shadow-sm" id="leaderboard-list"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- [화면 5] 원격 실시간 관리자 모드 화면 -->
+        <div id="admin-screen" class="hidden flex-1 flex flex-col relative z-10 bg-slate-50">
+            <header class="bg-slate-900 text-white p-4 sticky top-0 z-20 flex flex-col space-y-3 shadow-md">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-red-500 rounded-md flex items-center justify-center"><span class="text-white font-black text-xs">A</span></div>
+                        <div><h2 class="font-bold text-sm tracking-tight">Finez Admin Control</h2><p class="text-[10px] text-red-400 -mt-0.5 animate-pulse">● 실시간 원격 관제 중</p></div>
+                    </div>
+                    <button onclick="clearAllData()" class="bg-red-600/30 text-[11px] font-bold px-2.5 py-1 rounded-full text-red-200">전체 데이터 리셋</button>
+                </div>
+                <div class="bg-slate-800 rounded-xl p-3 flex justify-between items-center border border-slate-700/60">
+                    <div><p class="text-xs font-bold text-slate-200">🌐 전체 위치 시뮬레이터 마스터 스위치</p><p class="text-[10px] text-slate-400">활성화 시 모든 조의 GPS 좌표 장벽이 무력화 통과됩니다.</p></div>
+                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="admin-mock-location-toggle" class="sr-only peer" onchange="syncLocationSimulatorState(this.checked)"><div class="w-9 h-5 bg-slate-600 rounded-full peer peer-checked:bg-emerald-500"></div></label>
+                </div>
+            </header>
+            <main class="flex-1 p-4 overflow-y-auto space-y-5">
+                <div class="space-y-2"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider">조별 스코어 제어</p><div class="grid grid-cols-1 gap-2" id="admin-team-cards"></div></div>
+                <div class="space-y-2"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider">장소별 통합 퀘스트 현황판</p><div class="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-sm space-y-3" id="admin-quiz-matrix"></div></div>
+            </main>
+        </div>
+
+        <!-- 미션 모달 구조 생략하지 않고 완벽히 보존 -->
+        <div id="quiz-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-slate-100/50 relative">
+                <div class="border-b border-slate-100 p-4 flex justify-between items-center bg-slate-50/50 sticky top-0 z-30">
+                    <div class="flex items-center space-x-2">
+                        <span id="modal-badge" class="bg-blue-50 text-blue-600 text-[10px] font-extrabold px-2.5 py-1 rounded-full">1일차</span>
+                        <h3 id="modal-location" class="font-bold text-slate-900 text-sm">장소명</h3>
+                    </div>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-medium w-8 h-8 rounded-full flex items-center justify-center">&times;</button>
+                </div>
+                <div class="p-5 flex-1 overflow-y-auto space-y-4">
+                    <div id="modal-lock-section" class="text-center py-6 px-2 space-y-4">
+                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-xl text-blue-600">📍</div>
+                        <div class="space-y-1">
+                            <p class="text-sm font-bold text-slate-900">도착 여부를 인증해 주세요</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">목표 장소 반경 100m 이내에서 스마트폰 GPS 인증이 완료되어야 미션 메뉴가 해제됩니다.</p>
+                        </div>
+                        <button onclick="attemptLocationVerify()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full text-xs shadow-md">현장 위치 인증하기</button>
+                    </div>
+                    <div id="modal-branch-section" class="hidden text-center py-4 px-2 space-y-4">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl">🔓</div>
+                        <div class="space-y-1 mb-2">
+                            <p class="text-sm font-bold text-slate-900">위치 세션 보관 상태 유효</p>
+                            <p class="text-xs text-slate-400" id="modal-gps-timer">남은 인증 시간: 35분 00초</p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2.5 text-left">
+                            <button onclick="openQuizNavigationDashboard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs flex justify-between items-center shadow-sm">
+                                <span>📝 역사 퀴즈 풀기 스테이지 (비순차 선택 탐색)</span><span>→</span>
+                            </button>
+                            <button id="branch-photo-btn" onclick="goToPhotoSection()" class="w-full bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-bold py-3.5 rounded-xl text-xs flex justify-between items-center">
+                                <span>📸 답사 현장 인증샷 제출하기</span><span>→</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="modal-quiz-nav-section" class="hidden space-y-3">
+                        <div class="bg-slate-50 border border-slate-100 p-3 rounded-xl"><p class="text-xs text-slate-700 font-bold">🎯 문제 선택 대시보드</p><p class="text-[11px] text-slate-400 mt-0.5">원하는 단계를 먼저 터치해서 해결할 수 있으며 모르는 문제는 건너뛰었다가 나중에 다시 진입해 풀 수 있습니다.</p></div>
+                        <div id="quiz-step-buttons-grid" class="grid grid-cols-1 gap-2"></div>
+                        <button onclick="showChoiceSection()" class="w-full border border-slate-200 text-slate-500 font-bold py-2.5 rounded-xl text-xs mt-2">← 이전 미션 메뉴로</button>
+                    </div>
+                    <div id="modal-quiz-section" class="hidden space-y-4">
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider" id="modal-quiz-step-indicator">1 / 4 단계 문항</span>
+                                <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded" id="modal-attempts-left">기회: 2회</span>
+                            </div>
+                            <p class="text-slate-900 text-sm font-medium leading-relaxed" id="modal-question"></p>
+                        </div>
+                        <div id="modal-hint-box" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium p-3 rounded-xl flex items-start space-x-2">
+                            <span>💡 <b>역사 힌트 카드:</b></span> <span id="modal-hint-text">힌트 내용이 노출됩니다.</span>
+                        </div>
+                        <div id="modal-options" class="space-y-2"></div>
+                        <div class="flex space-x-2 pt-2">
+                            <button onclick="openQuizNavigationDashboard()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl text-xs text-center">↩ 목록(목차)으로 돌아가기</button>
+                        </div>
+                    </div>
+                    <div id="modal-photo-section" class="hidden space-y-4 flex flex-col items-center">
+                        <div class="text-left w-full"><p class="text-slate-800 text-xs font-semibold uppercase tracking-wider text-blue-600 mb-0.5">Photo Mission</p><p class="text-slate-900 text-sm font-medium leading-relaxed">현장을 증명할 수 있는 인증 사진을 찍어 보관함에 업로드해 주세요.</p></div>
+                        <div onclick="triggerFilePicker()" id="photo-box-container" class="w-full h-44 border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden relative">
+                            <div class="text-center space-y-1.5" id="photo-box-prompt"><div class="text-2xl text-slate-400 font-light">+</div><div class="text-[11px] text-slate-400 font-medium">카메라 촬영 / 사진 파일 선택</div></div>
+                            <img id="photo-box-preview" class="hidden w-full h-full object-cover absolute inset-0">
+                        </div>
+                        <input type="file" id="photo-hidden-file" accept="image/*" class="hidden" onchange="loadPhotoPreview(event)">
+                        <div class="flex justify-between items-center w-full pt-2">
+                            <button onclick="backToChoice()" class="text-xs text-slate-400 hover:text-slate-600 font-bold">← 미션 선택으로</button>
+                            <button onclick="submitPhotoMission()" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm">사진 인증 제출하기</button>
+                        </div>
+                    </div>
+                    <div id="modal-gacha-section" class="hidden w-full text-center py-6 space-y-5">
+                        <div class="text-xs font-bold text-blue-600 uppercase tracking-wider animate-bounce">🎰 보물상자 보상 등급 추첨 중 🎰</div>
+                        <div class="bg-slate-950 text-white rounded-2xl py-8 px-4 font-mono border-4 border-slate-800 shadow-inner overflow-hidden relative">
+                            <div id="gacha-slot-tier" class="text-2xl font-black tracking-tight">일반 보상</div>
+                            <div id="gacha-slot-pts" class="text-4xl font-black text-amber-400 mt-2 tracking-wide animate-pulse">0 PTS</div>
+                        </div>
+                        <p class="text-xs text-slate-400">데이터 노드 무결성 추첨 중입니다...</p>
+                        <button id="gacha-confirm-btn" onclick="confirmGachaReward()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-xs shadow-md">
+                            메인 화면으로 돌아가기 🎁
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- [2일차 & 3일차 전체 코스 및 역사 문항 어레이 완벽 복원 정의] ---
+        const coursesDB = {
+            "course_01": { name: "남원 유곡리와 두락리 고분군", lat: 35.507804, lng: 127.620780, day: 1 },
+            "course_02": { name: "실상사", lat: 35.418720, lng: 127.637634, day: 1 },
+            "course_03": { name: "광한루", lat: 35.403463, lng: 127.379389, day: 1 },
+            "course_04": { name: "순천왜성", lat: 34.907955, lng: 127.581435, day: 2 },
+            "course_05": { name: "송광사", lat: 35.002152, lng: 127.275921, day: 2 },
+            "course_06": { name: "낙안읍성", lat: 34.907310, lng: 127.341130, day: 2 },
+            "course_07": { name: "화엄사", lat: 35.256045, lng: 127.496933, day: 3 },
+            "course_08": { name: "석주관성", lat: 35.200391, lng: 127.568171, day: 3 }
+        };
+
+        const quizzesDB = [
+            // 1일차 코스 퀴즈 (기존 정상 구동 분량 보존)
+            { id: "q_01_1", course: "course_01", step: 1, question: "남원 유곡리와 두락리 고분군은 전라북도 지역에서 가야 세력의 존재를 증명하는 대표적인 유적입니다. 이 고분군을 축조한 세력으로 가장 유력한 가야 연맹체는 어디일까요?", options: ["금관가야", "대가야", "아라가야", "성산가야"], answer: "대가야", points: 15, hint: "고령 지역을 중심으로 후기 가야 연맹을 주도했던 가야 세력입니다." },
+            { id: "q_01_2", course: "course_01", step: 2, question: "이 고분군에서 출토된 유물 중 백제 무령왕릉 출토품과 매우 유사하여, 당시 가야 세력이 백제와도 긴밀히 교류했음을 보여주는 대표적인 장신구는 무엇일까요?", options: ["금동관모", "은제 관장식", "청동거울", "철제 갑옷"], answer: "금동관모", points: 15, hint: "머리에 쓰는 모자 형태의 화려한 금동제 장식품입니다." },
+            { id: "q_01_3", course: "course_01", step: 3, question: "유곡리와 두락리 고분군의 주요 무덤 구조로, 긴 네모꼴의 돌방을 만들고 한쪽 벽에 문을 만들어 추가 매장이 가능하도록 설계한 무덤 양식은 무엇일까요?", options: ["돌널무덤", "독무덤", "굴식 돌방무덤", "돌지방 무덤"], answer: "굴식 돌방무덤", points: 20, hint: "백제와 고구려의 대표적인 무덤 구조이자 가야 후기에 도입된 양식입니다." },
+            { id: "q_01_4", course: "course_01", step: 4, question: "이 고분군은 호남 지역 가야 유적 중 최초로 그 학술적 가치를 인정받아 국가 지정 문화재 '이것'으로 지정되었습니다. 무엇일까요?", options: ["보물", "사적", "천연기념물", "명승"], answer: "사적", points: 20, hint: "역사적으로 기념이 될 만한 유적지에 지정하는 문화재 등급입니다." },
+            
+            { id: "q_02_1", course: "course_02", step: 1, question: "지리산 자락에 위치한 실상사는 통일신라 선종 구산선문 중 가장 먼저 문을 연 최초의 가람입니다. 이 산문의 이름은 무엇일까요?", options: ["가지산문", "실상산문", "동리산문", "봉림산문"], answer: "실상산문", points: 15, hint: "실상사의 이름을 그대로 딴 선종의 시초 산문입니다." },
+            { id: "q_02_2", course: "course_02", step: 2, question: "실상사 경내에 있는 신라 시대의 대표적인 석탑으로, 동쪽과 서쪽에 쌍탑으로 서 있으며 탑 꼭대기의 머리장식(상륜부)이 완벽하게 보존된 것으로 유명한 문화재는?", options: ["실상사 삼층석탑", "실상사 오층석탑", "실상사 다보탑", "실상사 석등"], answer: "실상사 삼층석탑", points: 15, hint: "신라 전형적인 양식을 계승한 3층 구조의 쌍탑입니다." },
+            { id: "q_02_3", course: "course_02", step: 3, question: "실상사를 창건한 인물로, 당나라에서 선종을 공부하고 돌아와 신라 흥덕왕의 후원을 받아 이곳을 개창한 고승은 누구일까요?", options: ["원효대사", "의상대사", "홍척국사", "도선국사"], answer: "홍척국사", points: 20, hint: "신라 후기 선종을 크게 일으킨 구산선문의 개척자 중 한 분입니다." },
+            { id: "q_02_4", course: "course_02", step: 4, question: "실상사 철조여래좌상은 통일신라 후기 지리산 인근 지역의 뛰어난 철제 불상 제작 기술을 보여줍니다. 이 불상이 안치되어 있는 전각의 이름은 무엇일까요?", options: ["대웅전", "보광전", "약사전", "극락전"], answer: "보광전", points: 20, hint: "실상사의 중심 전각 중 하나로 비로자나불이나 철조여래를 모시는 곳입니다." },
+
+            { id: "q_03_1", course: "course_03", step: 1, question: "남원의 상징인 광한루원은 조선 시대 독특한 우주관과 정원 양식이 반영된 조경 유적입니다. 처음에 세종 대 황희 정승이 세웠을 때의 최초 이름은 무엇이었을까요?", options: ["광한루", "광한전", "광통루", "조선루"], answer: "광통루", points: 15, hint: "황희 정승이 남원에 유배되었을 때 지은 누각의 원래 명칭입니다." },
+            { id: "q_03_2", course: "course_03", step: 2, question: "이후 정인지가 누각에 올라 아름다운 풍경을 보고 '달나라 궁전(광한청허부)과 같다'고 감탄하여 현재의 '광한루'라는 이름으로 고쳐 부르게 되었습니다. 이 인물은 누구일까요?", options: ["신숙주", "정인지", "한명회", "이황"], answer: "정인지", points: 15, hint: "훈민정음 창제에 참여한 조선 초기의 학자이자 정치가입니다." },
+            { id: "q_03_3", course: "course_03", step: 3, question: "광한루 앞마당에는 천하를 본뜬 호수가 있고, 호수 위에는 은하수를 상징하는 돌다리가 놓여 있어 성춘향과 이몽룡의 사랑 무대가 되었습니다. 이 다리의 이름은 무엇일까요?", options: ["오작교", "징검다리", "반월교", "십리교"], answer: "오작교", points: 20, hint: "견우와 직녀가 칠월칠석에 만난다는 전설 속 다리와 같은 이름입니다." },
+            { id: "q_03_4", course: "course_03", step: 4, question: "광한루는 조선 정유재란 당시 화마로 인해 한 차례 소실되는 비극을 겪었습니다. 이후 조선 인조 대에 다시 복원된 연도는 언제일까요?", options: ["1626년", "1592년", "1419년", "1720년"], answer: "1626년", points: 20, hint: "17세기 초반인 조선 인조 4년에 남원부사 신감이 중건했습니다." },
+
+            // 2일차 코스 퀴즈 (새로 추가)
+            { id: "q_04_1", course: "course_04", step: 1, question: "순천왜성은 정유재란 당시 조·명 연합군과 왜군 사이에 가장 치열한 전투가 벌어졌던 전장입니다. 당시 이곳에서 농성하며 저항했던 왜군의 중심 장수는 누구일까요?", options: ["고니시 유키나가", "가토 기요마사", "도요토미 히데요시", "시마즈 요시히로"], answer: "고니시 유키나가", points: 15, hint: "임진왜란 당시 제1군을 이끌고 선봉에 섰던 왜장입니다." },
+            { id: "q_04_2", course: "course_04", step: 2, question: "순천왜성 전투에서 왜군을 격퇴하기 위해 조선 수군을 이끌고 바다를 공략하다가 결국 노량해전에서 전사하신 조선의 성웅은 누구일까요?", options: ["이순신 장군", "원균 장군", "권율 장군", "곽재우 장군"], answer: "이순신 장군", points: 15, hint: "거북선을 제작하고 한산도 대첩을 이끄신 삼도수군통제사입니다." },
+            { id: "q_04_3", course: "course_04", step: 3, question: "순천왜성 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+            { id: "q_04_4", course: "course_04", step: 4, question: "순천왜성 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+
+            { id: "q_05_1", course: "course_05", step: 1, question: "송광사는 한국 전라남도 순천시에 있는 조계산 자락의 사찰로, 한국 공인 삼보사찰 중 승보사찰(僧寶)로 고귀한 지위를 지닙니다. 이 사찰을 중창하고 수선사 결사를 이끌어 고려 불교를 전면 혁신한 고승은?", options: ["지눌국사", "의천국사", "일연선사", "원효대사"], answer: "지눌국사", points: 15, hint: "정혜쌍수와 돈오점수를 제창하며 조계종의 종조가 되신 분입니다." },
+            { id: "q_05_2", course: "course_05", step: 2, question: "송광사 퀴즈 2단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 15, hint: "힌트 내용" },
+            { id: "q_05_3", course: "course_05", step: 3, question: "송광사 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+            { id: "q_05_4", course: "course_05", step: 4, question: "송광사 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+
+            { id: "q_06_1", course: "course_06", step: 1, question: "낙안읍성은 조선 시대 성곽과 전통 초가집들이 원형 그대로 보존되어 주민들이 현재까지 실제 생활하고 있는 살아있는 역사 민속마을입니다. 이 읍성을 처음 토성으로 쌓은 조선 초기의 무신은?", options: ["임경업 장군", "김종서 장군", "이징옥 장군", "남이 장군"], answer: "임경업 장군", points: 15, hint: "이후 병자호란 때 활약하였으며, 현재 낙안읍성 내에 이 분의 군수 임명 기념비가 있습니다." },
+            { id: "q_06_2", course: "course_06", step: 2, question: "낙안읍성 퀴즈 2단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 15, hint: "힌트 내용" },
+            { id: "q_06_3", course: "course_06", step: 3, question: "낙안읍성 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+            { id: "q_06_4", course: "course_06", step: 4, question: "낙안읍성 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+
+            // 3일차 코스 퀴즈 (새로 추가)
+            { id: "q_07_1", course: "course_07", step: 1, question: "구례 화엄사는 민족의 영산 지리산에 위치한 유서 깊은 사찰입니다. 신라 시대 의상대사가 화엄 사상을 널리 펼치기 위해 지은, 사방 벽면에 화엄경을 돌에 새겨 붙인 전각의 흔적은 무엇일까요?", options: ["화엄경석(각황전)", "대웅전", "명부전", "나한전"], answer: "화엄경석(각황전)", points: 15, hint: "조선 시대에 중건된 각황전 내부에 그 파편들이 보관되어 있습니다." },
+            { id: "q_07_2", course: "course_07", step: 2, question: "화엄사 퀴즈 2단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 15, hint: "힌트 내용" },
+            { id: "q_07_3", course: "course_07", step: 3, question: "화엄사 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+            { id: "q_07_4", course: "course_07", step: 4, question: "화엄사 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+
+            { id: "q_08_1", course: "course_08", step: 1, question: "석주관성은 구례와 남원을 잇는 요새이자 임진왜란·정유재란 당시 구례 지역의 의병과 승병들이 목숨을 바쳐 왜군에 맞서 싸운 호국 유적입니다. 당시 결사 항전한 의병장 무리는?", options: ["구례 칠의사", "금산 이천의사", "진주 전상의사", "남원 오충신"], answer: "구례 칠의사", points: 15, hint: "석주관성 아래에는 전사한 7명의 의병장과 수많은 백성을 기리는 성역화 공간이 있습니다." },
+            { id: "q_08_2", course: "course_08", step: 2, question: "석주관성 퀴즈 2단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 15, hint: "힌트 내용" },
+            { id: "q_08_3", course: "course_08", step: 3, question: "석주관성 퀴즈 3단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" },
+            { id: "q_08_4", course: "course_08", step: 4, question: "석주관성 퀴즈 4단계 문항입니다.", options: ["보기1", "보기2", "보기3", "보기4"], answer: "보기1", points: 20, hint: "힌트 내용" }
+        ];
+
+        const gachaTiers = [
+            { name: "👑 전설의 보물", points: 150, color: "text-amber-500 font-extrabold" },
+            { name: "✨ 영웅의 보물", points: 80, color: "text-purple-500 font-bold" },
+            { name: "🔷 희귀한 보물", points: 50, color: "text-blue-500 font-bold" },
+            { name: "🟢 고급 보물", points: 30, color: "text-emerald-500 font-medium" },
+            { name: "⚪ 일반 보물", points: 15, color: "text-slate-500 font-medium" },
+            { name: "💥 꽝! 저주받은 상자", points: 5, color: "text-rose-500 line-through" }
+        ];
+
+        const defaultUsersDB = {
+            "token_kim123": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, isConfigured: false },
+            "token_lee456": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, isConfigured: false },
+            "token_park789": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, isConfigured: false }
+        };
+
+        let usersDB = {...defaultUsersDB};
+        let isAdmin = false;
+        let currentUser = null;
+        let currentToken = "";
+        let currentSelectedDay = 1;
+        let currentBaseCourseId = null; 
+        let currentActiveQuiz = null;
+        let locationVerifiedQuizzes = {}; 
+        let timerInterval = null;
+        let rouletteInterval = null;
+        let finalRolledReward = null; 
+
+        function initData() {
+            const savedDB = localStorage.getItem("quiz_users_db");
+            if (savedDB) {
+                try { usersDB = JSON.parse(savedDB); } catch(e) { usersDB = {...defaultUsersDB}; }
+            } else { localStorage.setItem("quiz_users_db", JSON.stringify(usersDB)); }
+
+            Object.keys(usersDB).forEach(key => {
+                let u = usersDB[key];
+                if (!u.failedAttempts || typeof u.failedAttempts !== 'object') u.failedAttempts = {};
+                if (!u.photoStatus || typeof u.photoStatus !== 'object') u.photoStatus = {};
+                if (!u.photoData || typeof u.photoData !== 'object') u.photoData = {};
+                if (!u.photoVerified || typeof u.photoVerified !== 'object') u.photoVerified = {};
+                if (!Array.isArray(u.solved)) u.solved = [];
+            });
+            const savedGps = localStorage.getItem("gps_verified_quizzes");
+            if (savedGps) locationVerifiedQuizzes = JSON.parse(savedGps);
+        }
+
+        // [수정] 위성 시뮬레이터 마스터 키가 켜져 있으면 로컬 무관 100% 검증 통과 연동 처리
+        function checkGpsSessionValid(courseId) {
+            if (localStorage.getItem("global_mock_location") === "true") return true; 
+            const timestamp = locationVerifiedQuizzes[courseId];
+            if (!timestamp) return false;
+            return (Date.now() - timestamp) < 2100000; 
+        }
+
+        function syncLocationSimulatorState(checked) {
+            localStorage.setItem("global_mock_location", checked ? "true" : "false");
+            const st2 = document.getElementById("admin-mock-location-toggle");
+            if(st2) st2.checked = checked;
+            saveAndSync();
+        }
+
+        function saveAndSync() {
+            localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+            if (isAdmin) renderAdminDashboard();
+            else if (currentUser) { currentUser = usersDB[currentToken]; updateHeaderUI(); renderQuizList(); }
+            renderLeaderboard();
+        }
+
+        // 크로스 브라우저 실시간 관제 연동
+        window.addEventListener('storage', (e) => {
+            if (e.key === "quiz_users_db" && e.newValue) {
+                usersDB = JSON.parse(e.newValue);
+                if (isAdmin) renderAdminDashboard();
+                else if (currentUser) { currentUser = usersDB[currentToken]; updateHeaderUI(); renderQuizList(); }
+                renderLeaderboard();
+            }
+            if (e.key === "global_mock_location") {
+                const isChecked = localStorage.getItem("global_mock_location") === "true";
+                const st2 = document.getElementById("admin-mock-location-toggle");
+                if(st2) st2.checked = isChecked;
+                if (!isAdmin && currentUser) renderQuizList();
+            }
+        });
+
+        // [신규 로직] 메인 화면 버튼 터치 시 브라우저 보안 락을 풀고 기기 세션을 읽도록 유도 (아이폰 대응 핵심)
+        function activateNfcReaderSession() {
+            const spinner = document.getElementById("nfc-spinner");
+            const statusText = document.getElementById("nfc-status-text");
+
+            spinner.className = "w-6 h-6 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin";
+            statusText.innerText = "NFC 안테나 동기화 완료! 카드를 기기에 태그해 주세요.";
+            statusText.className = "text-xs font-bold text-blue-600 animate-pulse";
+
+            // 브라우저의 사용자 행동(User Gesture) 락이 해제되었으므로, 파라미터 체크 진행
+            setTimeout(() => {
+                checkAuthentication();
+            }, 500);
+        }
+
+        function checkAuthentication() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const isMocked = localStorage.getItem("global_mock_location") === "true";
+            
+            const st2 = document.getElementById("admin-mock-location-toggle");
+            if(st2) st2.checked = isMocked;
+
+            if (token === 'admin_secret') {
+                isAdmin = true; hideAllScreens(); document.getElementById("admin-screen").classList.remove("hidden"); renderAdminDashboard();
+            } else if (token && usersDB[token]) {
+                isAdmin = false; currentToken = token; currentUser = usersDB[token];
+                if (!currentUser.isConfigured) {
+                    hideAllScreens(); document.getElementById("setup-screen").classList.remove("hidden");
+                    document.getElementById("setup-team-input").value = currentUser.team;
+                } else { triggerLoadingSequence(); }
+            } else { 
+                // 토큰 없이 주소로 그냥 오거나 로딩 중일 때는 임시 대기 상태로 메인에 대기
+                hideAllScreens(); 
+                document.getElementById("auth-screen").classList.remove("hidden"); 
+            }
+        }
+
+        function hideAllScreens() {
+            document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("app-screen").classList.add("hidden");
+            document.getElementById("admin-screen").classList.add("hidden");
+        }
+
+        function triggerLoadingSequence() {
+            hideAllScreens(); document.getElementById("loading-screen").classList.remove("hidden");
+            setTimeout(() => { document.getElementById("loading-title").innerText = "조원 데이터 맵핑 인프라 동기화..."; }, 600);
+            setTimeout(() => {
+                hideAllScreens(); document.getElementById("app-screen").classList.remove("hidden");
+                updateHeaderUI(); switchDay(currentSelectedDay); renderLeaderboard();
+            }, 1200);
+        }
+
+        function saveTeamSetup() {
+            const teamInput = document.getElementById("setup-team-input").value.trim();
+            const membersInput = document.getElementById("setup-members-input").value.trim();
+            if (!teamInput) { alert("우리 조 이름을 입력해 주세요!"); return; }
+            currentUser.team = teamInput; currentUser.members = membersInput ? membersInput : "등록된 조원 없음";
+            currentUser.isConfigured = true; usersDB[currentToken] = currentUser;
+            saveAndSync(); triggerLoadingSequence();
+        }
+
+        function updateHeaderUI() {
+            if(!currentUser) return;
+            document.getElementById("user-info-text").innerText = currentUser.team;
+            document.getElementById("user-members-text").innerText = currentUser.members || "조원 등록 없음";
+            document.getElementById("user-score").innerText = currentUser.score;
+        }
+
+        function clearAllData() {
+            if(confirm("모든 조의 점수, 인증샷, 진행 내역을 초기화하시겠습니까?")) {
+                localStorage.clear(); usersDB = {...defaultUsersDB}; locationVerifiedQuizzes = {};
+                localStorage.setItem("global_mock_location", "false");
+                saveAndSync(); alert("시스템 리셋이 완료되었습니다."); window.location.reload();
+            }
+        }
+
+        function renderAdminDashboard() {
+            const teamCardContainer = document.getElementById("admin-team-cards"); teamCardContainer.innerHTML = "";
+            Object.keys(usersDB).forEach(token => {
+                const user = usersDB[token]; const card = document.createElement("div");
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200/70 shadow-sm space-y-2";
+                let pendingCount = 0;
+                Object.values(user.photoStatus).forEach(status => { if(status === 'pending') pendingCount++; });
+                let alertBadge = pendingCount > 0 ? `<span class="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-2 animate-pulse">심사요청 ${pendingCount}건</span>` : "";
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div><h4 class="font-bold text-slate-900 text-sm">${user.team} ${alertBadge}</h4><p class="text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded-md mt-1 font-medium">👥 조원: ${user.members}</p></div>
+                        <span class="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">${user.score} PTS</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 border-t border-slate-50">
+                        <p class="text-[10px] text-slate-400">맞힌 문항: ${user.solved.length}개</p>
+                        <div class="flex space-x-1">
+                            <button onclick="adjustAdminScore('${token}', 10)" class="bg-slate-900 text-white font-bold px-2 py-1 rounded text-[10px]">+10</button>
+                            <button onclick="adjustAdminScore('${token}', -10)" class="bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded text-[10px] border">-10</button>
+                        </div>
+                    </div>`;
+                teamCardContainer.appendChild(card);
+            });
+
+            const matrixContainer = document.getElementById("admin-quiz-matrix"); matrixContainer.innerHTML = "";
+            Object.keys(coursesDB).forEach(courseId => {
+                const course = coursesDB[courseId]; const quizRow = document.createElement("div");
+                quizRow.className = "border-b border-slate-100 pb-3 last:border-0 last:pb-0";
+                let teamStatusHTML = "";
+                Object.keys(usersDB).forEach(token => {
+                    const user = usersDB[token]; const subQuizzes = quizzesDB.filter(q => q.course === courseId);
+                    let solvedCount = 0, lockedCount = 0;
+                    subQuizzes.forEach(q => { if(user.solved.includes(q.id)) solvedCount++; if((user.failedAttempts[q.id]||0) >= 2) lockedCount++; });
+                    let quizBadge = `<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">퀴즈 ${solvedCount}/4 ${lockedCount > 0 ? `(🔒${lockedCount})` : ''}</span>`;
+                    
+                    let pStatus = user.photoStatus[courseId];
+                    let photoBadge = `<span class="text-[10px] bg-slate-50 text-slate-300 px-1.5 py-0.5 rounded">사진 미등록</span>`;
+                    if (pStatus === 'pending') photoBadge = `<button onclick="openAdminPhotoModal('${token}', '${courseId}')" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 font-bold px-1.5 py-0.5 rounded animate-pulse">📸 승인 대기</button>`;
+                    else if (pStatus === 'approved') photoBadge = `<span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-1.5 py-0.5 rounded">✅ 승인됨</span>`;
+                    else if (pStatus === 'claimed') photoBadge = `<span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded">🎁 상자개봉</span>`;
+
+                    teamStatusHTML += `
+                        <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 last:border-0">
+                            <span class="text-slate-700 font-bold">${user.team}</span>
+                            <div class="flex items-center space-x-2">${quizBadge} ${photoBadge}</div>
+                        </div>`;
+                });
+                quizRow.innerHTML = `
+                    <div class="flex justify-between items-center mb-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100"><span class="text-xs font-black text-slate-800">${course.day}일차 - ${course.name}</span></div>
+                    <div class="p-1 px-2">${teamStatusHTML}</div>`;
+                matrixContainer.appendChild(quizRow);
+            });
+        }
+
+        function openAdminPhotoModal(token, courseId) {
+            const user = usersDB[token]; const imgData = user.photoData[courseId];
+            document.getElementById("admin-photo-title").innerText = `${user.team} - 인증샷 원격 검수`;
+            document.getElementById("admin-photo-img").src = imgData || "";
+            document.getElementById("admin-photo-modal").classList.remove("hidden");
+
+            document.getElementById("admin-photo-approve-btn").onclick = function() {
+                usersDB[token].photoStatus[courseId] = 'approved'; saveAndSync(); closeAdminPhoto();
+            };
+            document.getElementById("admin-photo-reject-btn").onclick = function() {
+                usersDB[token].photoStatus[courseId] = null; usersDB[token].photoData[courseId] = null; saveAndSync(); closeAdminPhoto();
+            };
+        }
+        function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
+        function adjustAdminScore(token, amount) { usersDB[token].score += amount; saveAndSync(); }
+
+        function switchTab(tab) {
+            const qBtn = document.getElementById("tab-quiz-btn"), rBtn = document.getElementById("tab-rank-btn");
+            const qCon = document.getElementById("tab-quiz-content"), rCon = document.getElementById("tab-rank-content");
+            if (tab === 'quiz') {
+                qBtn.className = "flex-1 py-2 text-center text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm";
+                rBtn.className = "flex-1 py-2 text-center text-xs font-bold rounded-lg text-slate-500 hover:text-slate-900";
+                qCon.classList.remove("hidden"); rCon.classList.add("hidden"); renderQuizList();
+            } else {
+                rBtn.className = "flex-1 py-2 text-center text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm";
+                qBtn.className = "flex-1 py-2 text-center text-xs font-bold rounded-lg text-slate-500 hover:text-slate-900";
+                qCon.classList.add("hidden"); rCon.classList.remove("hidden"); renderLeaderboard();
+            }
+        }
+
+        function switchDay(day) {
+            currentSelectedDay = day;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`day${i}-btn`);
+                if (i === day) btn.className = "px-4 py-2 text-xs font-bold rounded-full bg-slate-900 text-white shadow-sm";
+                else btn.className = "px-4 py-2 text-xs font-bold rounded-full bg-slate-100 text-slate-600";
+            }
+            renderQuizList();
+        }
+
+        function renderQuizList() {
+            const container = document.getElementById("quiz-list"); container.innerHTML = "";
+            Object.keys(coursesDB).forEach(courseId => {
+                const course = coursesDB[courseId]; if (course.day !== currentSelectedDay) return;
+
+                const subQuizzes = quizzesDB.filter(q => q.course === courseId);
+                let solvedCount = 0, lockedCount = 0;
+                subQuizzes.forEach(q => { if (currentUser.solved.includes(q.id)) solvedCount++; if ((currentUser.failedAttempts[q.id] || 0) >= 2) lockedCount++; });
+
+                const pStatus = currentUser.photoStatus[courseId]; const isVerified = checkGpsSessionValid(courseId);
+
+                let statusBadge = `<span class="bg-slate-50 text-slate-400 text-[10px] px-2.5 py-1 rounded-full font-bold border border-slate-100">위치 미인증</span>`;
+                let btnText = '위치 인증 및 미션선택 →'; let btnClass = 'bg-slate-50 text-slate-800 hover:bg-blue-50 hover:text-blue-600';
+
+                if (solvedCount + lockedCount === 4 && pStatus === 'claimed') {
+                    statusBadge = `<span class="bg-emerald-50 text-emerald-600 text-[10px] px-2.5 py-1 rounded-full font-bold border border-emerald-100">🎖️ 전체 올클리어</span>`;
+                    btnText = '모든 미션 완료'; btnClass = 'bg-slate-100 text-slate-400 cursor-not-allowed';
+                } else if (isVerified) {
+                    statusBadge = `<span class="bg-blue-50 text-blue-600 text-[10px] px-2.5 py-1 rounded-full font-bold border border-blue-100">🔓 인증 유지 중</span>`;
+                    btnText = '미션 선택'; 
+                }
+
+                let waitingSubBtnHTML = "";
+                if (pStatus === 'pending') {
+                    waitingSubBtnHTML = `<div class="w-full mt-1.5 text-[11px] font-bold py-2 rounded-xl text-center bg-amber-50 text-amber-600 border border-amber-200 border-dashed animate-pulse">⏳ [심사 대기] 제출된 사진 검수 중...</div>`;
+                }
+
+                let mainTreasureBtnHTML = "";
+                if (!pStatus) {
+                    mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-50 border border-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center opacity-60"><div><span class="text-sm grayscale">📦</span> <span>보물상자 (사진 승인 시 오픈)</span></div> <span>🔒</span></button>`;
+                } else if (pStatus === 'pending') {
+                    mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-50 border border-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center"><div><span class="text-sm">⏳</span> <span>스태프의 사진 심사 완료 후 활성화</span></div> <span>🔒</span></button>`;
+                } else if (pStatus === 'approved') {
+                    mainTreasureBtnHTML = `<button onclick="triggerDirectTreasureGacha('${courseId}')" class="w-full mt-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white font-extrabold py-3 px-4 rounded-xl text-[11px] flex justify-between items-center treasure-glow transform scale-[1.01] transition-finez"><div><span class="text-sm animate-bounce">🎁</span> <span class="text-white">보물상자 오픈 활성화! (터치 시작)</span></div> <span>→</span></button>`;
+                } else if (pStatus === 'claimed') {
+                    const savedGacha = currentUser.photoVerified[courseId] || {};
+                    mainTreasureBtnHTML = `<button disabled class="w-full mt-1.5 bg-slate-800 text-slate-400 font-medium py-3 px-4 rounded-xl text-[11px] flex justify-between items-center shadow-inner"><div><span>💎</span> <span>보상 수령 완료: ${savedGacha.tier} (+${savedGacha.points}P)</span></div> <span>✓</span></button>`;
+                }
+
+                const progressText = `퀴즈 완료: ${solvedCount}/4 문항 ${lockedCount > 0 ? `(잠금 ${lockedCount})` : ''}`;
+                const card = document.createElement("div"); card.className = `p-4 rounded-2xl border border-slate-100 bg-white shadow-sm`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div><h3 class="font-bold text-slate-900 text-sm tracking-tight">${course.name}</h3><p class="text-[11px] text-slate-400 mt-0.5">${progressText}</p></div>
+                        ${statusBadge}
+                    </div>
+                    <button onclick="openQuizModal('${courseId}')" class="w-full mt-4 text-xs font-semibold py-2.5 rounded-full text-center transition-finez ${btnClass}">${btnText}</button>
+                    ${waitingSubBtnHTML} ${mainTreasureBtnHTML}`;
+                container.appendChild(card);
+            });
+        }
+
+        function showLockSection() {
+            document.getElementById("modal-lock-section").classList.remove("hidden");
+            document.getElementById("modal-branch-section").classList.add("hidden");
+            document.getElementById("modal-quiz-nav-section").classList.add("hidden");
+            document.getElementById("modal-quiz-section").classList.add("hidden");
+            document.getElementById("modal-photo-section").classList.add("hidden");
+            document.getElementById("modal-gacha-section").classList.add("hidden");
+        }
+
+        function showChoiceSection() {
+            document.getElementById("modal-lock-section").classList.add("hidden");
+            document.getElementById("modal-branch-section").classList.remove("hidden");
+            document.getElementById("modal-quiz-nav-section").classList.add("hidden");
+            document.getElementById("modal-quiz-section").classList.add("hidden");
+            document.getElementById("modal-photo-section").classList.add("hidden");
+            document.getElementById("modal-gacha-section").classList.add("hidden");
+        }
+
+        function goToPhotoSection() {
+            document.getElementById("modal-branch-section").classList.add("hidden");
+            document.getElementById("modal-photo-section").classList.remove("hidden");
+        }
+
+        function triggerDirectTreasureGacha(courseId) {
+            currentBaseCourseId = courseId; const course = coursesDB[courseId];
+            document.getElementById("modal-badge").innerText = `${course.day}일차`;
+            document.getElementById("modal-location").innerText = course.name;
+            document.getElementById("quiz-modal").classList.remove("hidden");
+            startGachaSequence(); 
+        }
+
+        function openQuizModal(courseId) {
+            currentBaseCourseId = courseId; const course = coursesDB[courseId];
+            document.getElementById("modal-badge").innerText = `${course.day}일차`;
+            document.getElementById("modal-location").innerText = course.name;
+            document.getElementById("quiz-modal").classList.remove("hidden");
+
+            document.getElementById("photo-box-preview").src = "";
+            document.getElementById("photo-box-preview").classList.add("hidden");
+            document.getElementById("photo-box-prompt").classList.remove("hidden");
+            document.getElementById("photo-hidden-file").value = "";
+
+            if (timerInterval) clearInterval(timerInterval);
+            if (checkGpsSessionValid(courseId)) { showChoiceSection(); startGpsTimerUpdate(courseId); } else { showLockSection(); }
+        }
+
+        function startGpsTimerUpdate(courseId) {
+            const timerText = document.getElementById("modal-gps-timer");
+            function updateText() {
+                if(localStorage.getItem("global_mock_location") === "true") { timerText.innerText = "🚩 위성 시뮬레이터 원격 허용 상태 (시간 무제한)"; return; }
+                const startStamp = locationVerifiedQuizzes[courseId]; if(!startStamp) return;
+                const remaining = 2100000 - (Date.now() - startStamp); 
+                if (remaining <= 0) {
+                    clearInterval(timerInterval); alert("⏳ 유효 기한 만료! 다시 위치 인증을 해주세요.");
+                    showLockSection(); renderQuizList();
+                } else {
+                    const mins = Math.floor(remaining / 60000), secs = Math.floor((remaining % 60000) / 1000);
+                    timerText.innerText = `남은 인증 시간: ${mins}분 ${secs < 10 ? '0' : ''}${secs}초`;
+                }
+            }
+            updateText(); timerInterval = setInterval(updateText, 1000);
+        }
+
+        function closeModal() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (rouletteInterval) clearInterval(rouletteInterval);
+            document.getElementById("quiz-modal").classList.add("hidden");
+            currentBaseCourseId = null; renderQuizList(); 
+        }
+
+        function openQuizNavigationDashboard() {
+            document.getElementById("modal-branch-section").classList.add("hidden");
+            document.getElementById("modal-quiz-section").classList.add("hidden");
+            document.getElementById("modal-quiz-nav-section").classList.remove("hidden");
+
+            const grid = document.getElementById("quiz-step-buttons-grid"); grid.innerHTML = "";
+            const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
+
+            subQuizzes.forEach((quiz) => {
+                const isSolved = currentUser.solved.includes(quiz.id);
+                const failedAttempts = currentUser.failedAttempts[quiz.id] || 0;
+                const isLocked = failedAttempts >= 2;
+
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-3.5 border rounded-xl text-xs font-bold flex justify-between items-center transition-finez";
+                
+                if (isSolved) {
+                    btn.className += " border-lime-200 bg-lime-50 text-lime-700";
+                    btn.innerHTML = `<span>✅ 제 ${quiz.step}단계 문항 (풀이 성공)</span> <span class="font-mono text-[10px] bg-lime-200/60 px-2 py-0.5 rounded">+${quiz.points}P</span>`;
+                } else if (isLocked) {
+                    btn.className += " border-rose-200 bg-rose-50 text-rose-500 cursor-not-allowed";
+                    btn.innerHTML = `<span>🔒 제 ${quiz.step}단계 문항 (기회 상실/잠금)</span> <span class="text-[10px]">❌ 종료</span>`;
+                } else {
+                    btn.className += " border-slate-200 bg-white text-slate-800 hover:bg-slate-50";
+                    btn.innerHTML = `<span>📝 제 ${quiz.step}단계 문항 도전하기 ${failedAttempts === 1 ? '<span class="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded text-[10px] font-medium ml-1">기회 1회 남음</span>' : ''}</span> <span>공략 →</span>`;
+                    btn.onclick = function() { loadSpecificQuizQuestion(quiz); };
+                }
+                grid.appendChild(btn);
+            });
+            checkAndTriggerTotalScoreReport(subQuizzes);
+        }
+
+        function checkAndTriggerTotalScoreReport(subQuizzes) {
+            let processedCount = 0; let correctCount = 0;
+            subQuizzes.forEach(q => {
+                if (currentUser.solved.includes(q.id)) { processedCount++; correctCount++; }
+                else if ((currentUser.failedAttempts[q.id] || 0) >= 2) { processedCount++; }
+            });
+            if (processedCount === 4 && !currentUser.photoVerified[currentBaseCourseId + "_report_done"]) {
+                currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true;
+                usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+                setTimeout(() => { alert(`🎉 [답사 역사 미션 종료 성적표] \n\n본 코스의 4단계를 모두 마무리하셨습니다! \n★ 총 4문제 중 [ ${correctCount}문제 ] 정답 통과 완료!`); }, 400);
+            }
+        }
+
+        function loadSpecificQuizQuestion(quiz) {
+            currentActiveQuiz = quiz;
+            document.getElementById("modal-quiz-nav-section").classList.add("hidden");
+            document.getElementById("modal-quiz-section").classList.remove("hidden");
+
+            document.getElementById("modal-quiz-step-indicator").innerText = `${quiz.step} / 4 단계 공략 문항`;
+            document.getElementById("modal-question").innerText = quiz.question;
+            
+            const failedCount = currentUser.failedAttempts[quiz.id] || 0;
+            document.getElementById("modal-attempts-left").innerText = `기회: ${2 - failedCount}회`;
+            
+            const hintBox = document.getElementById("modal-hint-box");
+            if (failedCount === 1 && quiz.hint) {
+                document.getElementById("modal-hint-text").innerText = quiz.hint; hintBox.classList.remove("hidden");
+            } else { hintBox.classList.add("hidden"); }
+
+            const optionsContainer = document.getElementById("modal-options"); optionsContainer.innerHTML = "";
+            quiz.options.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-3.5 border border-slate-200 bg-white rounded-xl text-xs font-semibold text-slate-800 flex justify-between items-center shadow-sm transition-finez";
+                btn.innerHTML = `<span>${opt}</span> <span>→</span>`;
+                btn.onclick = function() { handleAnswerSubmit(opt, this); }; optionsContainer.appendChild(btn);
+            });
+
+            const skipBtn = document.createElement("button");
+            skipBtn.className = "w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 font-bold py-2.5 rounded-xl text-[11px] transition-finez mt-4 text-center block shadow-inner";
+            skipBtn.innerText = "이 문제 건너뛰고 다음 단계 문항 보기 ↩";
+            skipBtn.onclick = function() {
+                if(confirm("이 문항을 건너뛰시겠습니까?")) { openQuizNavigationDashboard(); }
+            };
+            optionsContainer.appendChild(skipBtn);
+        }
+
+        function handleAnswerSubmit(selected, btnElement) {
+            const qId = currentActiveQuiz.id; let failedCount = currentUser.failedAttempts[qId] || 0;
+            const optionsContainer = document.getElementById("modal-options");
+            const optionButtons = optionsContainer.getElementsByTagName("button");
+            
+            for(let b of optionButtons) b.disabled = true;
+
+            if (selected === currentActiveQuiz.answer) {
+                btnElement.className = "w-full text-left p-3.5 border-2 border-lime-500 bg-lime-50 rounded-xl text-xs font-bold text-lime-700 flex justify-between items-center shadow-sm transition-finez";
+                currentUser.score += currentActiveQuiz.points; currentUser.solved.push(qId);
+                usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+                updateHeaderUI();
+
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs shadow-md transition-finez mt-4";
+                nextBtn.innerText = "정답! 다음 문제로 넘어가기 →";
+                nextBtn.onclick = function() { openQuizNavigationDashboard(); }; optionsContainer.appendChild(nextBtn);
+            } else {
+                btnElement.className = "w-full text-left p-3.5 border border-rose-400 bg-rose-50 rounded-xl text-xs font-bold text-rose-700 flex justify-between items-center shadow-sm shake-effect";
+                setTimeout(() => {
+                    failedCount++; currentUser.failedAttempts[qId] = failedCount;
+                    usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+                    if (failedCount >= 2) {
+                        alert(`❌ 기회 소진! 아쉽게도 해당 문항은 정답 실패(잠금) 처리됩니다.`); openQuizNavigationDashboard(); 
+                    } else {
+                        alert(`❌ 오답입니다! 하단의 역사 힌트 카드를 확인하고 다시 도전해 보세요.`);
+                        loadSpecificQuizQuestion(currentActiveQuiz); 
+                    }
+                }, 300);
+            }
+        }
+
+        function triggerFilePicker() { document.getElementById("photo-hidden-file").click(); }
+        function loadPhotoPreview(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 500;
+                    let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    const previewImg = document.getElementById("photo-box-preview");
+                    previewImg.src = compressedDataUrl; previewImg.setAttribute("data-base64", compressedDataUrl);
+                    previewImg.classList.remove("hidden"); document.getElementById("photo-box-prompt").classList.add("hidden");
+                }; img.src = e.target.result;
+            }; reader.readAsDataURL(file);
+        }
+
+        function submitPhotoMission() {
+            const previewImg = document.getElementById("photo-box-preview"); const dataUrl = previewImg.getAttribute("data-base64");
+            if (!dataUrl) { alert("사진을 첨부해 주세요!"); return; }
+            currentUser.photoData[currentBaseCourseId] = dataUrl; currentUser.photoStatus[currentBaseCourseId] = 'pending';
+            usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+            alert("사진 전송 성공! 스태프 심사가 완료되면 황금 상자 락이 열립니다."); closeModal();
+        }
+
+        function backToChoice() { showChoiceSection(); }
+
+        function startGachaSequence() {
+            document.getElementById("modal-lock-section").classList.add("hidden");
+            document.getElementById("modal-branch-section").classList.add("hidden");
+            document.getElementById("modal-quiz-nav-section").classList.add("hidden");
+            document.getElementById("modal-quiz-section").classList.add("hidden");
+            document.getElementById("modal-photo-section").classList.add("hidden");
+            document.getElementById("modal-gacha-section").classList.remove("hidden");
+            
+            const rand = Math.random() * 100;
+            if (rand < 1.0) finalRolledReward = gachaTiers[0];
+            else if (rand < 51.0) finalRolledReward = gachaTiers[1];
+            else if (rand < 81.0) finalRolledReward = gachaTiers[2];
+            else if (rand < 91.0) finalRolledReward = gachaTiers[3];
+            else if (rand < 99.0) finalRolledReward = gachaTiers[4];
+            else finalRolledReward = gachaTiers[5];
+
+            const tDisp = document.getElementById("gacha-slot-tier"), pDisp = document.getElementById("gacha-slot-pts");
+            tDisp.className = "text-2xl font-black tracking-tight gacha-roll text-slate-400";
+            let tc = 0; if (rouletteInterval) clearInterval(rouletteInterval);
+            rouletteInterval = setInterval(() => {
+                const mock = gachaTiers[Math.floor(Math.random() * gachaTiers.length)];
+                tDisp.innerText = mock.name; pDisp.innerText = `${Math.floor(Math.random()*120)} PTS`;
+                tc += 60; if(tc >= 1500) {
+                    clearInterval(rouletteInterval); tDisp.innerText = finalRolledReward.name;
+                    tDisp.className = `text-3xl font-extrabold tracking-tight scale-110 border-b border-slate-800 pb-1.5 ${finalRolledReward.color}`;
+                    pDisp.innerText = `${finalRolledReward.points} PTS`;
+                    document.getElementById("gacha-confirm-btn").classList.remove("hidden");
+                }
+            }, 60);
+        }
+
+        function confirmGachaReward() {
+            currentUser.photoVerified[currentBaseCourseId] = { tier: finalRolledReward.name, points: finalRolledReward.points, color: finalRolledReward.color };
+            currentUser.photoStatus[currentBaseCourseId] = 'claimed'; currentUser.score += finalRolledReward.points;
+            usersDB[currentToken] = currentUser; localStorage.setItem("quiz_users_db", JSON.stringify(usersDB));
+            updateHeaderUI(); closeModal();
+        }
+
+        function attemptLocationVerify() {
+            if (localStorage.getItem("global_mock_location") === "true") {
+                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
+                showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList(); return;
+            }
+            navigator.geolocation.getCurrentPosition((pos) => {
+                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); localStorage.setItem("gps_verified_quizzes", JSON.stringify(locationVerifiedQuizzes));
+                showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList();
+            }, (err) => alert("GPS 신호 획득 실패! 스태프에게 원격 마스터 승인을 요청하세요."));
+        }
+
+        let activeAccordionToken = null;
+        function toggleLeaderboardAccordion(token) {
+            activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const listContainer = document.getElementById("leaderboard-list"); if (!listContainer) return;
+            listContainer.innerHTML = "";
+            let sortedUsers = Object.keys(usersDB).map(k => ({token: k, ...usersDB[k]})).sort((a, b) => b.score - a.score);
+
+            if(sortedUsers.length > 0 && document.getElementById("top-team-text")) {
+                document.getElementById("top-team-text").innerText = `${sortedUsers[0].team} (${sortedUsers[0].score} PTS)`;
+            }
+
+            sortedUsers.forEach((user, index) => {
+                let rankLabel = `<span class="text-xs font-extrabold text-slate-400 w-5 text-center">${index + 1}</span>`;
+                if (index === 0) rankLabel = `<span class="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-0.5 rounded-md">1ST</span>`;
+                if (index === 1) rankLabel = `<span class="bg-slate-100 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-md">2ND</span>`;
+                
+                const isMe = currentUser && user.token === currentToken; const isExpanded = activeAccordionToken === user.token;
+
+                let receiptHTML = "";
+                if (isExpanded) {
+                    let baseInfoHTML = `<div><p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">👥 조원 명단 정보</p><p class="text-xs text-slate-700 font-medium mt-0.5 leading-relaxed">${user.members || '미등록'}</p></div>`;
+                    let detailScoreHTML = "";
+                    if (isMe) {
+                        let quizReceipts = "";
+                        user.solved.forEach(qId => {
+                            const quiz = quizzesDB.find(q => q.id === qId);
+                            if(quiz) {
+                                const course = coursesDB[quiz.course];
+                                quizReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'} (${quiz.step}단계)</span><span class="font-mono text-emerald-600 font-bold">+${quiz.points}P</span></div>`;
+                            }
+                        });
+
+                        let photoReceipts = "";
+                        if(user.photoVerified) {
+                            Object.keys(user.photoVerified).forEach(cId => {
+                                if(cId.endsWith("_report_done")) return;
+                                const cInfo = coursesDB[cId]; const gInfo = user.photoVerified[cId];
+                                if(cInfo && gInfo) photoReceipts += `<div class="flex justify-between text-[11px] text-slate-500 py-0.5"><span>🎁 상자: ${cInfo.name}</span><span class="font-mono text-amber-600 font-bold">+${gInfo.points}P</span></div>`;
+                            });
+                        }
+
+                        let totalReceipts = quizReceipts + photoReceipts;
+                        if(!totalReceipts) totalReceipts = `<div class="text-[11px] text-slate-400 italic py-1">아직 스코어 기록이 없습니다.</div>`;
+                        detailScoreHTML = `<div class="pt-2 border-t border-slate-200/60 mt-1.5"><p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">🎯 우리조 포인트 획득 세부 출처</p><div class="mt-1 divide-y divide-slate-100/50">${totalReceipts}</div></div>`;
+                    }
+                    receiptHTML = `<div class="mt-2.5 pt-2.5 border-t border-slate-100 bg-slate-50/80 p-3 rounded-xl space-y-2 animate-fade-in">${baseInfoHTML} ${detailScoreHTML}</div>`;
+                }
+
+                const item = document.createElement("div");
+                item.className = `p-4 border-b border-slate-50 last:border-0 transition-finez cursor-pointer ${isMe ? 'bg-blue-50/20' : 'hover:bg-slate-50/40'}`;
+                item.onclick = function() { toggleLeaderboardAccordion(user.token); };
+                item.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-3">${rankLabel}<span class="text-xs font-bold text-slate-800">${user.team} ${isMe ? '<span class="bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse">MY</span>' : ''}</span></div>
+                        <div class="flex items-center space-x-1.5"><span class="text-xs font-black text-slate-900">${user.score} PTS</span><span class="text-[10px] text-slate-300">${isExpanded ? '▲' : '▼'}</span></div>
+                    </div>
+                    ${receiptHTML}`;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // 초기 시작 시 기본 화면 구조 설정 대기
+        window.onload = function() { 
+            initData(); 
+            // 첫 로드 시 파라미터가 있더라도 자동 리다이렉트를 막고 사용자가 메인의 대형 버튼을 누르도록 대기 상태를 강제 유지
+            hideAllScreens();
+            document.getElementById("auth-screen").classList.remove("hidden");
+        };
+    </script>
+</body>
+</html>
