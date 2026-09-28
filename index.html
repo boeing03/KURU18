@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -640,7 +641,7 @@
             { id: "q_03_5", course: "course_03", step: 5, question: "조선 시대 사대부들은 이 삼신산이 실제 한반도에 존재한다고 믿었습니다. 봉래산(금강산), 영주산(한라산)과 함께 삼신산의 하나로 불렸던 '방장산(方丈山)'은 현재 어떤 산을 가리킬까요?", options: ["설악산", "지리산", "내장산", "무등산"], answer: "지리산", points: 25, hint: "'어리석은 자도 지혜로워진다(智異)'는 뜻을 가졌으며, '두류산(頭流山)'으로도 불립니다." },
 
             // --- [제4코스: 호남호국기념관] ---
-            { id: "q_04_1", course: "course_04", step: 1, question: "『이충무공전서』 서간첩에서 이순신이 \"호남은 국가의 보장이니, 이곳이 없으면 곧 국가가 없는 것이다\"라며 호남 수군의 전략적 가치를 강조한 한자 구절은?", options: ["필사즉생 필생즉사 (必死則生 必生則死)", "약무호남 시무국가 (若無湖南 是無國家)", "상유십이 미신불사 (尙有十二 微臣不死)", "일체단심 보국안민 (一體丹心 輔國安民)"], answer: "약무호남 시무국가 (若無湖南 是 martial 國家)", points: 10, hint: "기념관 제3전시실 입구 벽면에 새겨진 표어입니다." },
+            { id: "q_04_1", course: "course_04", step: 1, question: "『이충무공전서』 서간첩에서 이순신이 \"호남은 국가의 보장이니, 이곳이 없으면 곧 국가가 없는 것이다\"라며 호남 수군의 전략적 가치를 강조한 한자 구절은?", options: ["필사즉생 필생즉사 (必死則生 必生則死)", "약무호남 시무국가 (若無湖南 是無國家)", "상유십이 미신불사 (尙有十二 微臣不死)", "일체단심 보국안민 (一體丹心 輔國安民)"], answer: "약무호남 시무국가 (若無湖南 是無國家)", points: 10, hint: "기념관 제3전시실 입구 벽면에 새겨진 표어입니다." },
             { id: "q_04_2", course: "course_04", step: 2, question: "1950년 7월 호남 전선이 비었을 때, 북한군 최정예 제6사단(방호산 부대)이 전주·광주·순천을 거쳐 기습 타격하려 했던 낙동강 방어선의 서남단 배후 요충지는?", options: ["대구 - 영천 축선", "왜관 - 칠곡 축선", "안동 - 포항 축선", "진주 - 마산 축선"], answer: "진주 - 마산 축선", points: 10, hint: "호남을 돌아 부산의 턱밑인 경남 서남부를 찌르려던 기동 작전입니다." },
             { id: "q_04_3", course: "course_04", step: 3, question: "1950년 7월 순천·여수·광양의 중학생 180여 명이 혈서 지원 후 하동 화개전투에 참전할 때 배속된 국군 제15연대의 독자적 중대 단위 명칭은?", options: ["학도 독립 제5중대", "청년 결사 제1중대", "소년 유격 수색대", "화개 방어 특공대"], answer: "학도 독립 제5중대", points: 15, hint: "15연대의 기존 1~4중대에 이어 편성된 '중대'였습니다." },
             { id: "q_04_4", course: "course_04", step: 4, question: "6·25전쟁 당시 미군은 삐라의 주제와 메시지에 따라 고유한 작전명을 부여했습니다. 적군 포로에 대한 신변 안전 보장과 인도적 환대를 강조하며 투항을 유도했던 심리전 작전명이 아닌것은 무엇일까요?", options: ["불도저", "아이고", "깃발", "구사일생"], answer: "아이고", points: 20, hint: "기획전시실을 집중적으로 살펴보세요!!" },
@@ -850,7 +851,6 @@
             hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
         }
 
-        // [iOS 최적화] DB 로딩 타이밍과 토큰 검증 대기 로직 적용
         function handleInAppAuth(token) {
             if (!token) return;
 
@@ -865,7 +865,7 @@
                 return;
             }
 
-            // DB 데이터가 아직 로드 중이면 0.1초 뒤 재시도 (아이폰 로딩 지연 방지)
+            // DB 데이터가 아직 로드 중이면 0.1초 뒤 재시도
             if (!isDbLoaded || Object.keys(usersDB).length === 0) {
                 setTimeout(() => handleInAppAuth(token), 100);
                 return;
@@ -892,11 +892,13 @@
             }
         }
 
-        // [iOS 최적화] URL 파라미터 조기 삭제 방지 및 인증 순서 보정
+        // [최종 수정] URL 파라미터를 읽어올 때 공백(스페이스)를 자동으로 제거함 (.trim() 적용)
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
-            const tokenUrl = urlParams.get('token');
-            const goblinCode = urlParams.get('goblin');
+            const rawToken = urlParams.get('token');
+            const tokenUrl = rawToken ? rawToken.trim() : null;
+            const rawGoblin = urlParams.get('goblin');
+            const goblinCode = rawGoblin ? rawGoblin.trim() : null;
 
             // 1. 고블린 이벤트 파라미터가 있을 때
             if (goblinCode) {
@@ -904,7 +906,7 @@
                 return;
             }
 
-            // 2. 토큰 파라미터가 있을 때 (URL을 먼저 지우지 않고 인증 처리)
+            // 2. 토큰 파라미터가 있을 때
             if (tokenUrl) {
                 handleInAppAuth(tokenUrl);
                 try {
@@ -941,7 +943,11 @@
                                 let urlData = new TextDecoder(record.encoding || "utf-8").decode(record.data).replace(/\0/g, ''); 
                                 try {
                                     let urlObj = new URL(urlData);
-                                    let token = urlObj.searchParams.get('token'), goblin = urlObj.searchParams.get('goblin');
+                                    let rawToken = urlObj.searchParams.get('token');
+                                    let rawGoblin = urlObj.searchParams.get('goblin');
+                                    let token = rawToken ? rawToken.trim() : null;
+                                    let goblin = rawGoblin ? rawGoblin.trim() : null;
+                                    
                                     if (goblin) processGoblinTag(goblin); else if (token) handleInAppAuth(token); 
                                 } catch(e) {}
                             }
@@ -1261,7 +1267,9 @@
                             if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
                                 let urlData = new TextDecoder(record.encoding || "utf-8").decode(record.data).replace(/\0/g, ''); 
                                 try {
-                                    let urlObj = new URL(urlData); let goblin = urlObj.searchParams.get('goblin');
+                                    let urlObj = new URL(urlData); 
+                                    let rawGoblin = urlObj.searchParams.get('goblin');
+                                    let goblin = rawGoblin ? rawGoblin.trim() : null;
                                     if (goblin) processGoblinTag(goblin); 
                                 } catch(e) {}
                             }
