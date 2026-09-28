@@ -17,7 +17,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
         
         :root {
-            /* 다크 모드 (기본 테마) */
+            /* 🌙 다크 모드 (기본 테마) */
             --bg-body: #040d0e;
             --bg-container: #081a1d;
             --bg-overlay: rgba(5, 15, 17, 0.65);
@@ -49,7 +49,7 @@
         }
 
         body.light-mode {
-            /* 라이트 모드 (전통 고서/한지 테마) */
+            /* ☀️ 라이트 모드 (전통 고서/한지 테마) */
             --bg-body: #d6cbb8; 
             --bg-container: #e8ddc5; 
             --bg-overlay: rgba(60, 50, 40, 0.55); 
@@ -387,7 +387,7 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-[11px] font-bold text-[var(--text-main)]">🔄 진행 상황만 초기화</p>
-                                <p class="text-[9px] text-[var(--text-sub)] mt-0.5">조 이름 유지, 점수와 진행률만 리셋</p>
+                                <p class="text-[9px] text-[var(--text-sub)] mt-0.5">조 이름 유지, 점수와 진행률 및 인물 조우 내역 리셋</p>
                             </div>
                             <button onclick="openResetModal('progress')" class="bg-[var(--bg-btn-surface)] border border-[var(--color-red)]/50 text-[var(--color-red-light)] text-[10px] font-bold px-3 py-1.5 rounded-lg transition-finez hover:bg-[var(--color-red)]/20 shadow-sm">부분 초기화</button>
                         </div>
@@ -874,12 +874,12 @@
             const tokenUrl = urlParams.get('token');
             const goblinCode = urlParams.get('goblin');
 
-            if (tokenUrl || goblinCode) {
-                try { window.history.replaceState({}, document.title, window.location.pathname); } catch(e) {}
-            }
             if (goblinCode) { processGoblinTag(goblinCode); return; }
 
             let token = tokenUrl;
+            if (tokenUrl) {
+                try { window.history.replaceState({}, document.title, window.location.pathname); } catch(e) {}
+            }
             if (!token) {
                 const savedToken = safeGetItem("active_user_token");
                 const savedTime = safeGetItem("login_timestamp");
@@ -922,16 +922,29 @@
         }
 
         function processGoblinTag(code) {
-            hideAllScreens(); document.getElementById("goblin-result-screen").classList.remove("hidden");
+            hideAllScreens(); 
+            document.getElementById("goblin-result-screen").classList.remove("hidden");
+            
             const activeToken = safeGetItem("active_user_token");
             if (!activeToken || !usersDB[activeToken]) {
-                document.getElementById("goblin-title").innerText = "접근 거부";
-                document.getElementById("goblin-score").innerText = "❌"; return;
+                document.getElementById("goblin-title").innerText = "조 등록 필요";
+                document.getElementById("goblin-desc").innerText = "먼저 우리 조 카드를 태그하여 로그인해 주세요!";
+                document.getElementById("goblin-score").innerText = "❌"; 
+                return;
             }
-            currentUser = usersDB[activeToken]; currentToken = activeToken;
-            if(currentUser.photoVerified["goblin_" + code]) {
+            currentUser = usersDB[activeToken]; 
+            currentToken = activeToken;
+            
+            if (!currentUser.photoVerified) currentUser.photoVerified = {};
+
+            // 이미 만난 인물인지 검증
+            if (currentUser.photoVerified["goblin_" + code]) {
+                document.getElementById("goblin-result-icon").innerText = "⚠️";
                 document.getElementById("goblin-title").innerText = "이미 만난 인물입니다!";
-                document.getElementById("goblin-score").innerText = "0"; return;
+                document.getElementById("goblin-desc").innerText = `${currentUser.team}은(는) 이미 이 인물과 조우했습니다.`;
+                document.getElementById("goblin-score").innerText = "0"; 
+                document.getElementById("goblin-score").className = "text-6xl font-black text-[var(--text-disabled)] tracking-tighter drop-shadow-md";
+                return;
             }
 
             let pts = 0; let title = ""; let colorClass = ""; let icon = "🎭";
@@ -940,15 +953,23 @@
             else if (code === 'plus100') { pts = 100; title = "거상에게 후원받음!"; colorClass = "text-[var(--color-gold-light)]"; icon="👑"; }
             else { pts = 10; title = "행인과 물물교환!"; colorClass = "text-blue-400"; icon="🪙"; }
 
-            currentUser.score += pts; currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
-            usersDB[currentToken] = currentUser; saveAndSync(); 
+            currentUser.score += pts; 
+            currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
+            usersDB[currentToken] = currentUser; 
+            saveAndSync(); 
+
             document.getElementById("goblin-result-icon").innerText = icon;
             document.getElementById("goblin-title").innerText = title;
             document.getElementById("goblin-desc").innerText = `${currentUser.team}의 엽전이 갱신되었습니다.`;
             document.getElementById("goblin-score").innerText = (pts > 0 ? "+" : "") + pts;
             document.getElementById("goblin-score").className = `text-6xl font-black tracking-tighter drop-shadow-md ${colorClass}`;
         }
-        function closeGoblinScreen() { document.getElementById("goblin-result-screen").classList.add("hidden"); checkAuthentication(); }
+
+        function closeGoblinScreen() { 
+            document.getElementById("goblin-result-screen").classList.add("hidden"); 
+            try { window.history.replaceState({}, document.title, window.location.pathname); } catch(e) {}
+            triggerLoadingSequence(); 
+        }
 
         function hideAllScreens() {
             document.getElementById("auth-screen").classList.add("hidden"); document.getElementById("setup-screen").classList.add("hidden");
@@ -980,10 +1001,10 @@
             
             if (type === 'progress') {
                 title.innerText = "진행 상황 초기화";
-                desc.innerHTML = `각 조의 <b class="text-[var(--color-gold)]">점수, 퀴즈 내역, 인증샷</b>만 삭제되며,<br>조 이름과 명단(기기 설정)은 그대로 유지됩니다.<br>정말 진행하시겠습니까?`;
+                desc.innerHTML = `각 조의 <b class="text-[var(--color-gold)]">점수, 퀴즈 내역, 인증샷, 인물 조우 기록</b>만 삭제되며,<br>조 이름과 명단(기기 설정)은 그대로 유지됩니다.<br>정말 진행하시겠습니까?`;
             } else {
                 title.innerText = "전체 데이터 초기화";
-                desc.innerHTML = `모든 조의 점수, 퀴즈 내역, 인증샷은 물론<br><b class="text-[var(--color-red-light)]">조 이름/명단(기기 설정)까지 영구 삭제</b>됩니다.<br>정말 진행하시겠습니까?`;
+                desc.innerHTML = `모든 조의 점수, 퀴즈 내역, 인증샷, 인물 조우 내역은 물론<br><b class="text-[var(--color-red-light)]">조 이름/명단(기기 설정)까지 영구 삭제</b>됩니다.<br>정말 진행하시겠습니까?`;
             }
             document.getElementById("admin-reset-modal").classList.remove("hidden");
         }
@@ -994,13 +1015,21 @@
             if (currentResetType === 'progress') {
                 Object.keys(usersDB).forEach(key => {
                     let u = usersDB[key];
-                    u.score = 0; u.solved = []; u.failedAttempts = {}; 
-                    u.photoStatus = {}; u.photoData = {}; u.photoVerified = {}; u.bonusHistory = {};
+                    u.score = 0; 
+                    u.solved = []; 
+                    u.failedAttempts = {}; 
+                    u.photoStatus = {}; 
+                    u.photoData = {}; 
+                    u.photoVerified = {}; 
+                    u.bonusHistory = {};
                 });
             } else {
                 usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
             }
             
+            safeRemoveItem('local_gps_verified');
+            safeSetItem('local_usersDB', JSON.stringify(usersDB));
+
             if (db) {
                 Promise.all([
                     db.ref('usersDB').set(usersDB),
@@ -1008,15 +1037,13 @@
                     db.ref('global_mock_location').set(false),
                     db.ref('global_nagan_locked').set(false)
                 ]).then(() => {
-                    alert(currentResetType === 'progress' ? "✅ 진행 상황이 초기화되었습니다." : "✅ 전체 데이터가 완벽하게 초기화되었습니다.");
+                    alert(currentResetType === 'progress' ? "✅ 진행 상황 및 이벤트 기록이 초기화되었습니다." : "✅ 전체 데이터가 완벽하게 초기화되었습니다.");
                     closeResetModal();
                     window.location.reload(); 
                 }).catch((err) => {
                     alert("초기화 실패: " + err.message);
                 });
             } else {
-                safeSetItem('local_usersDB', JSON.stringify(usersDB));
-                safeSetItem('local_gps_verified', JSON.stringify({}));
                 safeSetItem('global_mock_location', "false");
                 safeSetItem('global_nagan_locked', "false");
                 alert(currentResetType === 'progress' ? "✅ 진행 상황이 초기화되었습니다. (오프라인 모드)" : "✅ 전체 데이터가 완벽하게 초기화되었습니다. (오프라인 모드)");
