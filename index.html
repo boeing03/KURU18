@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -649,7 +648,7 @@
 
             // --- [제5코스: 송광사] ---
             { id: "q_05_1", course: "course_05", step: 1, question: "한국 불교에는 세 가지 보배를 모신 삼보사찰(三寶寺刹)이 있습니다. 보조국사 지눌을 비롯하여 16국사를 배출한 송광사는 삼보 중 무엇을 상징하는 사찰일까요?", options: ["계보 (戒寶)", "불보 (佛寶)", "승보 (僧寶)", "법보 (法寶)"], answer: "승보 (僧寶)", points: 10, hint: "수행을 이어온 '스님들의 공동체(승가)'를 뜻하는 보배입니다." },
-            { id: "q_05_2", course: "course_05", step: 2, question: "1190년 보조국사 지눌은 세속의 권력과 명리를 좇던 당시 불교계를 비판하며, 신앙 혁신 운동을 일으켰습니다. 조계종의 사상적 기틀이 된 이 운동의 명칭은?", options: ["돈오점수 (頓悟漸修)", "백련결사 (白蓮結社)", "정혜결사 (定慧結社)", "가지산문 (迦智山門)"], answer: "정혜결사 (定慧結社)", points: 10, hint: "마음의 본성을 닦는 개인의 수행 체계를 넘어, 승려들이 뜻을 모아 맺은 '신앙 공동체(結社)'의 명칭을 찾아야 합니다." },
+            { id: "q_05_2", course: "course_05", step: 2, question: "1190년 보조국사 지눌은 세속의 권력과 명리를 좇던 당시 불교계를 비판하며, 신앙 혁신 운동을 일으켰습니다. 조계종의 사상적 기틀이 된 이 운동의 명칭은?", options: ["돈오점수 (頓悟漸修)", "백련결사 (白蓮結社)", "정혜결사 (定慧결사)", "가지산문 (迦智山門)"], answer: "정혜결사 (定慧결사)", points: 10, hint: "마음의 본성을 닦는 개인의 수행 체계를 넘어, 승려들이 뜻을 모아 맺은 '신앙 공동체(結社)'의 명칭을 찾아야 합니다." },
             { id: "q_05_3", course: "course_05", step: 3, question: "정유재란으로 전소된 송광사는 1609년(광해군 1년) 한 고승이 수백 명의 문도를 이끌고 들어와 대대적인 가람 중창을 주도하며 부활했습니다. 조선 후기 송광사의 전후 복구를 이끈 이 고승은 누구일까요?", options: ["응선 화상", "보조 지눌", "벽암 각성", "부휴 선수"], answer: "부휴 선수", points: 15, hint: "지리산과 송광사를 중심으로 독자적인 문파를 열어 조선 후기 불교계를 양분했던 고승입니다." },
             { id: "q_05_4", course: "course_05", step: 4, question: "송광사 대웅보전 앞마당에는 일반 사찰과 달리 석탑과 석등이 없습니다. 사찰 터가 물에 떠 있는 형세라 무거운 석물을 올리면 가라앉는다는 풍수 설화에서 유래한 이 지형의 명칭은?", options: ["행주형", "갈룡음수형", "비봉포란형", "연화부수형"], answer: "연화부수형", points: 20, hint: "송광사는 불교를 상징하는 청정한 꽃이 수면에 떠 있는 모습에 빗댄 풍수 형국입니다." },
             { id: "q_05_5", course: "course_05", step: 5, question: "송광사 경내 깊숙한 곳에는 고려 시대 배출된 국사들의 영정을 모신 국보 '국사전(國師殿)'이 있습니다. 이곳으로 올라가는 돌계단은 모두 몇 개일까요?", options: ["10개", "16개", "25개", "15개"], answer: "16개", points: 25, hint: "송광사에서 배출된 국사는 보조국사 지눌을 포함하여 모두 몇 분일까요?" },
@@ -854,7 +853,6 @@
         function handleInAppAuth(token) {
             if (!token) return;
 
-            // 관리자 마스터 토큰은 DB 확인 없이 즉시 통과
             if (token === 'admin_secret') {
                 safeSetItem("active_user_token", token);
                 safeSetItem("login_timestamp", Date.now());
@@ -865,13 +863,11 @@
                 return;
             }
 
-            // DB 데이터가 아직 로드 중이면 0.1초 뒤 재시도
             if (!isDbLoaded || Object.keys(usersDB).length === 0) {
                 setTimeout(() => handleInAppAuth(token), 100);
                 return;
             }
 
-            // 실제 등록된 유저인지 검증
             if (usersDB[token]) {
                 safeSetItem("active_user_token", token);
                 safeSetItem("login_timestamp", Date.now());
@@ -892,7 +888,6 @@
             }
         }
 
-        // [최종 수정] URL 파라미터를 읽어올 때 공백(스페이스)를 자동으로 제거함 (.trim() 적용)
         function checkAuthentication() {
             const urlParams = new URLSearchParams(window.location.search);
             const rawToken = urlParams.get('token');
@@ -900,13 +895,11 @@
             const rawGoblin = urlParams.get('goblin');
             const goblinCode = rawGoblin ? rawGoblin.trim() : null;
 
-            // 1. 고블린 이벤트 파라미터가 있을 때
             if (goblinCode) {
                 processGoblinTag(goblinCode);
                 return;
             }
 
-            // 2. 토큰 파라미터가 있을 때
             if (tokenUrl) {
                 handleInAppAuth(tokenUrl);
                 try {
@@ -915,7 +908,6 @@
                 return;
             }
 
-            // 3. 파라미터가 없을 때는 기존 로컬스토리지 로그인 세션 복구
             const savedToken = safeGetItem("active_user_token");
             const savedTime = safeGetItem("login_timestamp");
             if (savedToken && savedTime) {
@@ -963,6 +955,7 @@
             }
         }
 
+        // [수정] 낙안읍성 수상한 인물 무제한 조우 로직 (30초 쿨타임)
         function processGoblinTag(code) {
             hideAllScreens(); 
             document.getElementById("goblin-result-screen").classList.remove("hidden");
@@ -979,11 +972,12 @@
             
             if (!currentUser.photoVerified) currentUser.photoVerified = {};
 
-            // 이미 만난 인물인지 검증
-            if (currentUser.photoVerified["goblin_" + code]) {
-                document.getElementById("goblin-result-icon").innerText = "⚠️";
-                document.getElementById("goblin-title").innerText = "이미 만난 인물입니다!";
-                document.getElementById("goblin-desc").innerText = `${currentUser.team}은(는) 이미 이 인물과 조우했습니다.`;
+            // 쿨타임 체크 (연속 터치 방지: 30초 내 동일 인물 조우 금지)
+            const lastTime = currentUser.photoVerified["goblin_" + code + "_time"];
+            if (lastTime && Date.now() - lastTime < 30000) {
+                document.getElementById("goblin-result-icon").innerText = "⏳";
+                document.getElementById("goblin-title").innerText = "잠시 후 다시 태그하세요!";
+                document.getElementById("goblin-desc").innerText = `너무 빨리 만났습니다. 30초 뒤에 다시 카드를 대주세요.`;
                 document.getElementById("goblin-score").innerText = "0"; 
                 document.getElementById("goblin-score").className = "text-6xl font-black text-[var(--text-disabled)] tracking-tighter drop-shadow-md";
                 return;
@@ -996,7 +990,12 @@
             else { pts = 10; title = "행인과 물물교환!"; colorClass = "text-blue-400"; icon="🪙"; }
 
             currentUser.score += pts; 
-            currentUser.photoVerified["goblin_" + code] = { title: title, points: pts };
+            
+            // 내역 저장을 위한 고유 ID (시간값 추가) 및 쿨타임 기록 갱신
+            const encounterId = "goblin_" + code + "_" + Date.now();
+            currentUser.photoVerified[encounterId] = { title: title, points: pts };
+            currentUser.photoVerified["goblin_" + code + "_time"] = Date.now();
+            
             usersDB[currentToken] = currentUser; 
             saveAndSync(); 
 
@@ -1508,7 +1507,7 @@
             returnBtn.innerText = "↩ 미션 선택으로 돌아가기"; returnBtn.onclick = showChoiceSection; optionsContainer.appendChild(returnBtn);
         }
 
-        // 단수 선택 제출 로직
+        // [수정] 단수 선택 제출 로직 (오답 시 잠김 방지 및 재선택 가능하게 변경)
         function handleAnswerSubmit(selected, btnElement) {
             if (isQuizProcessing) return; 
             isQuizProcessing = true; 
@@ -1516,17 +1515,9 @@
             const qId = currentActiveQuiz.id; 
             let failedCount = currentUser.failedAttempts[qId] || 0;
             const optionsContainer = document.getElementById("modal-options"); 
-            const optionButtons = Array.from(optionsContainer.getElementsByTagName("button"));
-            
-            optionButtons.forEach(b => {
-                b.disabled = true;
-                b.classList.add("pointer-events-none");
-            });
             
             if (selected === currentActiveQuiz.answer) {
-                optionButtons.forEach(b => b.classList.add("opacity-40"));
-                btnElement.classList.remove("opacity-40", "hover:bg-[var(--bg-btn-surface)]");
-                
+                // 정답 처리
                 btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center transition-all z-10 relative mb-2";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ ${selected}</span> <span class="text-emerald-400 font-black">+${currentActiveQuiz.points}P</span>`;
                 
@@ -1535,10 +1526,12 @@
                 
                 setTimeout(() => { loadNextQuestionFromQueue(); }, 2000);
             } else {
+                // 오답 처리
                 failedCount++; 
                 currentUser.failedAttempts[qId] = failedCount; 
                 usersDB[currentToken] = currentUser; saveAndSync();
                 
+                // 틀린 버튼만 ❌ 표시하고 disabled로 막지 않음 (기회가 남았다면 다른 버튼 누르도록 유도)
                 btnElement.className = "w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2";
                 btnElement.innerHTML = `<span class="flex-1">❌ 오답</span>`;
                 
@@ -1550,24 +1543,17 @@
                         document.getElementById("modal-hint-box").classList.remove("hidden");
                     }
                     setTimeout(() => {
-                        isQuizProcessing = false; 
-                        optionButtons.forEach(b => {
-                            if (!b.innerHTML.includes("❌")) {
-                                b.disabled = false;
-                                b.classList.remove("pointer-events-none");
-                            }
-                        });
+                        isQuizProcessing = false; // 0.5초 뒤 다른 버튼을 누를 수 있게 풀어줌
                     }, 500);
                 } else if (failedCount >= 2) {
-                    optionButtons.forEach(b => b.classList.add("opacity-40"));
-                    btnElement.classList.remove("opacity-40");
+                    // 2번 모두 틀리면 기회 소진 처리
                     btnElement.innerHTML = `<span class="flex-1 text-[var(--color-red-lighter)]">🔒 기회 소진 (다음으로 이동...)</span>`;
                     setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 1500);
                 }
             }
         }
 
-        // 복수 정답(다중 선택) 제출 로직
+        // [수정] 복수 정답(다중 선택) 제출 로직 (오답 시 잠김 방지)
         function handleMultipleSubmit(submitBtn) {
             if (isQuizProcessing) return;
             if (currentSelectedMultiple.length === 0) return alert("정답을 1개 이상 선택해 주세요.");
@@ -1578,7 +1564,7 @@
             const optionsContainer = document.getElementById("modal-options");
             const optionButtons = Array.from(optionsContainer.getElementsByClassName("multiple-opt-btn"));
 
-            optionButtons.forEach(b => { b.disabled = true; b.classList.add("pointer-events-none"); });
+            // 정답 확인 전 잠시 버튼 흐리게 처리
             submitBtn.disabled = true; submitBtn.classList.add("opacity-50");
 
             const correctAnswers = currentActiveQuiz.answers;
@@ -1625,12 +1611,8 @@
                     }
                     setTimeout(() => { 
                         isQuizProcessing = false; 
-                        submitBtn.disabled = false;
+                        submitBtn.disabled = false; // 제출 버튼 다시 활성화
                         submitBtn.classList.remove("opacity-50");
-                        optionButtons.forEach(b => {
-                            b.disabled = false;
-                            b.classList.remove("pointer-events-none");
-                        });
                     }, 500);
                 } else if (failedCount >= 2) {
                     setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 1500);
@@ -1745,7 +1727,8 @@
                         let photoReceipts = "";
                         if(user.photoVerified) { 
                             Object.keys(user.photoVerified).forEach(cId => { 
-                                if(cId.endsWith("_report_done")) return; 
+                                if(cId.endsWith("_report_done") || cId.endsWith("_time")) return; // [수정] 시간 기록 키 제외
+                                
                                 if(cId.startsWith("goblin_")) {
                                     const gInfo = user.photoVerified[cId];
                                     if(gInfo && typeof gInfo === 'object') {
