@@ -170,7 +170,6 @@
 
         <!-- [화면 1] NFC 대기 및 활성화 메인화면 -->
         <div id="auth-screen" class="hidden flex-1 flex flex-col justify-between p-7 relative z-10">
-            <!-- 상단 헤더 구역 -->
             <div class="flex justify-between items-start mt-2">
                 <div class="border-l-2 border-[var(--border-gold-alpha)] pl-3 py-0.5 space-y-0.5 text-left">
                     <p class="text-[10px] text-[var(--text-muted)] tracking-wider">2026학년도</p>
@@ -186,7 +185,6 @@
                 </div>
             </div>
 
-            <!-- 중앙 타이틀 구역 -->
             <div class="flex-1 flex flex-col items-center justify-center text-center my-auto px-2">
                 <div class="h-8 w-full mb-2"></div>
                 <div class="space-y-2 mb-10 mt-2">
@@ -277,18 +275,22 @@
                 </div>
             </header>
 
-            <main class="flex-1 p-4 overflow-y-auto pb-24">
+            <main class="flex-1 p-4 overflow-y-auto pb-24 relative">
+                <!-- 상단 공통 일차 선택기 -->
+                <div id="day-selector-container" class="flex space-x-2 overflow-x-auto pb-4 scrollbar-none sticky top-0 bg-[var(--bg-body)] z-10 pt-1 -mt-1 transition-all">
+                    <button id="day1-btn" onclick="switchDay(1)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--color-gold)] text-[var(--text-on-gold)] shadow-md">1일차</button>
+                    <button id="day2-btn" onclick="switchDay(2)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)]">2일차</button>
+                    <button id="day3-btn" onclick="switchDay(3)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)]">3일차</button>
+                </div>
+
+                <!-- 탭 1: 답사 코스 퀴즈 -->
                 <div id="tab-quiz-content" class="space-y-4">
-                    <div class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none">
-                        <button id="day1-btn" onclick="switchDay(1)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--color-gold)] text-[var(--text-on-gold)] shadow-md">1일차</button>
-                        <button id="day2-btn" onclick="switchDay(2)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)]">2일차</button>
-                        <button id="day3-btn" onclick="switchDay(3)" class="px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)]">3일차</button>
-                    </div>
                     <div id="quiz-list" class="space-y-3"></div>
                 </div>
 
+                <!-- 탭 2: 실시간 순위 -->
                 <div id="tab-rank-content" class="hidden space-y-4">
-                    <div class="bg-gradient-to-br from-[var(--bg-btn-surface)] to-[var(--bg-body)] p-5 rounded-2xl border border-[var(--border-gold-alpha)] shadow-xl relative overflow-hidden">
+                    <div class="bg-gradient-to-br from-[var(--bg-btn-surface)] to-[var(--bg-body)] p-5 rounded-2xl border border-[var(--border-gold-alpha)] shadow-xl relative overflow-hidden mt-1">
                         <div class="absolute right-4 top-4 text-[var(--color-red)] font-serif-title border border-[var(--color-red)]/50 text-[10px] px-1.5 py-0.5 rounded">
                             實時間 順位
                         </div>
@@ -297,9 +299,27 @@
                     </div>
                     <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-gold-alpha)] divide-y divide-[var(--border-dark)] shadow-lg" id="leaderboard-list"></div>
                 </div>
+
+                <!-- 탭 3: 전체 일정표 -->
+                <div id="tab-schedule-content" class="hidden space-y-4">
+                    <div class="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-gold-alpha)] p-5 shadow-lg relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 text-6xl opacity-5">📅</div>
+                        
+                        <div class="flex justify-between items-end mb-5 border-b border-[var(--border-dark)] pb-3 relative z-10">
+                            <div>
+                                <p class="text-[10px] text-[var(--text-muted)] tracking-wider font-serif-title uppercase mb-1">Time Table</p>
+                                <h3 class="font-black text-[var(--text-main)] font-serif-title text-xl tracking-tight" id="schedule-day-title">1일차 일정안내</h3>
+                            </div>
+                            <span id="schedule-date-badge" class="text-[11px] border border-[var(--color-gold)] text-[var(--color-gold)] bg-[var(--color-gold)]/10 px-2.5 py-1 rounded-lg font-bold">9월 30일 (水)</span>
+                        </div>
+                        
+                        <div id="schedule-list" class="mt-2"></div>
+                    </div>
+                </div>
             </main>
 
-            <nav class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-[var(--bg-header)] backdrop-blur-md border-t border-[var(--border-gold-alpha)] px-4 py-2 flex justify-around items-center z-30 shadow-2xl transition-finez">
+            <!-- 하단 네비게이션 바 -->
+            <nav class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-[var(--bg-header)] backdrop-blur-md border-t border-[var(--border-gold-alpha)] px-2 py-2 flex justify-around items-center z-30 shadow-2xl transition-finez">
                 <button id="nav-quiz-btn" onclick="switchTab('quiz')" class="flex-1 py-1 flex flex-col items-center justify-center space-y-1 text-[var(--color-gold)] transition-finez">
                     <span class="text-lg">📜</span>
                     <span class="text-[11px] font-bold font-serif-title tracking-tight">답사 코스</span>
@@ -308,6 +328,11 @@
                 <button id="nav-rank-btn" onclick="switchTab('rank')" class="flex-1 py-1 flex flex-col items-center justify-center space-y-1 text-[var(--text-disabled)] hover:text-[var(--text-main)] transition-finez">
                     <span class="text-lg">🏆</span>
                     <span class="text-[11px] font-bold font-serif-title tracking-tight">실시간 순위</span>
+                </button>
+                <div class="w-px h-6 bg-[var(--border-gold-alpha)]"></div>
+                <button id="nav-schedule-btn" onclick="switchTab('schedule')" class="flex-1 py-1 flex flex-col items-center justify-center space-y-1 text-[var(--text-disabled)] hover:text-[var(--text-main)] transition-finez">
+                    <span class="text-lg">📅</span>
+                    <span class="text-[11px] font-bold font-serif-title tracking-tight">일정표</span>
                 </button>
             </nav>
         </div>
@@ -499,7 +524,7 @@
                         </div>
                         <div class="grid grid-cols-1 gap-2.5 text-left">
                             <button id="branch-goblin-btn" onclick="goToGoblinSection()" class="hidden w-full bg-gradient-to-r from-[var(--color-red)] via-[var(--color-gold)] to-[var(--color-red)] text-[var(--text-on-gold)] font-extrabold py-3.5 px-4 rounded-xl text-xs flex justify-between items-center shadow-md transition-finez treasure-glow mb-1 active:scale-95">
-                                <div class="flex items-center space-x-2"><span class="text-lg animate-bounce">🕵️</span> <span>수상한 인물 조우! (보부상 or 산적)</span></div> <span class="font-black border border-slate-950/40 px-2 py-0.5 rounded text-[10px] leading-none">태그 →</span>
+                                <div class="flex items-center space-x-2"><span class="text-lg animate-bounce">🕵️</span> <span>수상한 인물 조우! (보부상 또는 도적)</span></div> <span class="font-black border border-slate-950/40 px-2 py-0.5 rounded text-[10px] leading-none">태그 →</span>
                             </button>
                             <button id="branch-quiz-btn" onclick="startSequentialQuiz()" class="w-full bg-[var(--bg-btn-surface)] hover:bg-[var(--bg-btn-hover)] border border-[var(--border-gold-alpha)] text-[var(--text-main)] font-bold py-3.5 px-4 rounded-xl text-xs flex justify-between items-center shadow-sm active:scale-95 transition-all">
                                 <span id="branch-quiz-text">📝 역사 퀴즈 풀기</span><span class="text-[var(--color-gold)] font-black text-lg leading-none pb-0.5">›</span>
@@ -515,7 +540,7 @@
                         <div class="w-16 h-16 bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">👣</div>
                         <div class="space-y-1.5">
                             <p class="text-base font-black text-[var(--color-gold)] font-serif-title">수상한 인물 출몰 구역</p>
-                            <p class="text-xs text-[var(--text-sub)] leading-relaxed">읍성 안을 배회하는 스태프를 찾아<br>스마트폰 뒷면에 전용 카드를 태그하세요.<br>보부상일까요, 산적일까요?</p>
+                            <p class="text-xs text-[var(--text-sub)] leading-relaxed">읍성 안을 배회하는 스태프를 찾아<br>스마트폰 뒷면에 전용 카드를 태그하세요.<br>보부상일까요, 도적일까요?</p>
                         </div>
                         <div class="bg-[var(--bg-header)] p-5 rounded-2xl border border-[var(--border-gold-alpha)] shadow-inner h-[110px] flex flex-col justify-center">
                             <div id="goblin-scanner-spinner" class="w-8 h-8 border-[3px] border-[var(--border-dark)] border-t-[var(--color-gold)] rounded-full animate-spin mx-auto mb-2"></div>
@@ -532,12 +557,13 @@
                                     <span class="text-[10px] font-bold text-[var(--color-gold)] font-serif-title uppercase tracking-wider bg-[var(--color-gold)]/10 px-2 py-0.5 rounded" id="modal-quiz-step-indicator">1 단계</span>
                                     <span class="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded" id="modal-quiz-points-indicator">10점</span>
                                 </div>
-                                <span class="text-[10px] font-bold text-[var(--color-red-light)] bg-[var(--color-red)]/10 px-2 py-0.5 rounded border border-[var(--color-red)]/20" id="modal-attempts-left">기회: 2회</span>
+                                <span class="text-[10px] font-bold text-[var(--color-red-light)] bg-[var(--color-red)]/10 px-2 py-0.5 rounded border border-[var(--color-red)]/20" id="modal-attempts-left">기회: 3회</span>
                             </div>
                             <p class="text-[var(--text-main)] text-sm font-medium leading-relaxed font-serif-title mt-1" id="modal-question"></p>
                         </div>
                         <div id="modal-hint-box" class="hidden bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] text-xs p-3 rounded-xl flex items-start space-x-2">
-                            <span>💡 <b>역사 힌트:</b></span> <span id="modal-hint-text">힌트 내용</span>
+                            <span class="flex-shrink-0 mt-[1px]">💡 <b>힌트:</b></span>
+                            <span id="modal-hint-text" class="leading-relaxed">힌트 내용</span>
                         </div>
                         <div id="modal-options" class="space-y-2"></div>
                     </div>
@@ -599,7 +625,7 @@
                 appId: "1:644961443759:web:596370b03a702ce509595a"
             };
             if (typeof firebase !== 'undefined') {
-                firebase.initializeApp(firebaseConfig);
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.database();
             }
         } catch (e) {
@@ -648,7 +674,7 @@
 
             // --- [제5코스: 송광사] ---
             { id: "q_05_1", course: "course_05", step: 1, question: "한국 불교에는 세 가지 보배를 모신 삼보사찰(三寶寺刹)이 있습니다. 보조국사 지눌을 비롯하여 16국사를 배출한 송광사는 삼보 중 무엇을 상징하는 사찰일까요?", options: ["계보 (戒寶)", "불보 (佛寶)", "승보 (僧寶)", "법보 (法寶)"], answer: "승보 (僧寶)", points: 10, hint: "수행을 이어온 '스님들의 공동체(승가)'를 뜻하는 보배입니다." },
-            { id: "q_05_2", course: "course_05", step: 2, question: "1190년 보조국사 지눌은 세속의 권력과 명리를 좇던 당시 불교계를 비판하며, 신앙 혁신 운동을 일으켰습니다. 조계종의 사상적 기틀이 된 이 운동의 명칭은?", options: ["돈오점수 (頓悟漸修)", "백련결사 (白蓮結社)", "정혜결사 (定慧結社)", "가지산문 (迦智山門)"], answer: "정혜결사 (定慧結社)", points: 10, hint: "마음의 본성을 닦는 개인의 수행 체계를 넘어, 승려들이 뜻을 모아 맺은 '신앙 공동체(結社)'의 명칭을 찾아야 합니다." },
+            { id: "q_05_2", course: "course_05", step: 2, question: "1190년 보조국사 지눌은 세속의 권력과 명리를 좇던 당시 불교계를 비판하며, 신앙 혁신 운동을 일으켰습니다. 조계종의 사상적 기틀이 된 이 운동의 명칭은?", options: ["돈오점수 (頓悟漸修)", "백련결사 (白蓮結社)", "정혜결사 (定慧결사)", "가지산문 (迦智山門)"], answer: "정혜결사 (定慧결사)", points: 10, hint: "마음의 본성을 닦는 개인의 수행 체계를 넘어, 승려들이 뜻을 모아 맺은 '신앙 공동체(結社)'의 명칭을 찾아야 합니다." },
             { id: "q_05_3", course: "course_05", step: 3, question: "정유재란으로 전소된 송광사는 1609년(광해군 1년) 한 고승이 수백 명의 문도를 이끌고 들어와 대대적인 가람 중창을 주도하며 부활했습니다. 조선 후기 송광사의 전후 복구를 이끈 이 고승은 누구일까요?", options: ["응선 화상", "보조 지눌", "벽암 각성", "부휴 선수"], answer: "부휴 선수", points: 15, hint: "지리산과 송광사를 중심으로 독자적인 문파를 열어 조선 후기 불교계를 양분했던 고승입니다." },
             { id: "q_05_4", course: "course_05", step: 4, question: "송광사 대웅보전 앞마당에는 일반 사찰과 달리 석탑과 석등이 없습니다. 사찰 터가 물에 떠 있는 형세라 무거운 석물을 올리면 가라앉는다는 풍수 설화에서 유래한 이 지형의 명칭은?", options: ["행주형", "갈룡음수형", "비봉포란형", "연화부수형"], answer: "연화부수형", points: 20, hint: "송광사는 불교를 상징하는 청정한 꽃이 수면에 떠 있는 모습에 빗댄 풍수 형국입니다." },
             { id: "q_05_5", course: "course_05", step: 5, question: "송광사 경내 깊숙한 곳에는 고려 시대 배출된 국사들의 영정을 모신 국보 '국사전(國師殿)'이 있습니다. 이곳으로 올라가는 돌계단은 모두 몇 개일까요?", options: ["10개", "16개", "25개", "15개"], answer: "16개", points: 25, hint: "송광사에서 배출된 국사는 보조국사 지눌을 포함하여 모두 몇 분일까요?" },
@@ -657,7 +683,7 @@
             { id: "q_06_1", course: "course_06", step: 1, question: "1626년(인조 4년) 낙안군수로 부임하여 훼손된 성곽을 오늘날과 같은 석성(石城)으로 중수한 조선 중기의 장수는?", options: ["이순신", "강홍립", "임경업", "어재연"], answer: "임경업", points: 10, hint: "읍성 동문 안쪽에 군수로서의 선정을 기리는 비각(선정비)이 세워져 있는 인물입니다." },
             { id: "q_06_2", course: "course_06", step: 2, question: "낙안읍성의 동문·서문·남문 바깥쪽에는 성문이 적에게 정면으로 노출되는 것을 막기 위해 성문을 반원형으로 둥글게 둘러싼 방어 시설이 있습니다. 이 구조물의 명칭은?", options: ["옹성", "치성", "해자", "적대"], answer: "옹성", points: 10, hint: "항아리를 반으로 쪼개어 놓은 듯 둥근 모양을 하고 있어 '독 옹(甕)' 자를 쓰는 성곽 방어 시설입니다." },
             { id: "q_06_3", course: "course_06", step: 3, type: "multiple", question: "순천 낙안읍성에서는 전통문화 계승과 지역의 맛을 널리 알리기 위해 해마다 대표적인 두 가지 축제가 열립니다. 낙안읍성에서 실제로 개최되는 대표 축제 2가지를 고르시오.", options: ["낙안전통놀이축제", "낙안민속문화축제", "남도음식문화축제", "읍성축조재현축제"], answers: ["낙안민속문화축제", "남도음식문화축제"], points: 15, hint: "조선 백성의 삶을 재현하는 고유의 '민속' 축제와, 전남의 맛을 알리는 '음식' 축제를 찾아보세요." },
-            { id: "q_06_4", course: "course_06", step: 4, question: "1974년 낙안읍성을 비롯하여 '집단민속자료 보호 구역'으로 지정되지 않은 마을은?", options: ["제주 성읍마을", "서산 해미읍성", "안동 하회마을", "고성 왕곡마을"], answer: "서산 해미읍성", points: 20, hint: "낙안읍성과 더불어 현재에도 원형이 잘 남아있는 조선시대 '읍성' 입니다." },
+            { id: "q_06_4", course: "course_06", step: 4, question: "1974년 낙안읍성 등과 함께 '집단민속자료 보호구역'으로 지정된 마을에 해당하지 않은 마을은?", options: ["제주 성읍마을", "서산 해미읍성", "안동 하회마을", "고성 왕곡마을"], answer: "서산 해미읍성", points: 20, hint: "낙안읍성과 더불어 현재에도 원형이 잘 남아있는 조선시대 '읍성' 입니다." },
             { id: "q_06_5", course: "course_06", step: 5, question: "안동 하회마을 등은 한 가문이 모여 산 '동성(동족)마을'로 세계유산에 등재되었습니다. 이와 달리 낙안읍성이 통합 등재되지 못한 고유의 주민 구성 특징은?", options: ["씨족마을", "반촌마을", "각성마을", "장시마을"], answer: "각성마을", points: 25, hint: "문중 중심의 단일 혈연 공동체가 아닌, 서민들이 섞여 형성된 비혈연 취락의 형태였습니다." },
 
             // --- [제7코스: 화엄사] ---
@@ -676,12 +702,51 @@
         ];
 
         const gachaTiers = [
-            { name: "👑 국보급(國寶級) 탁본", points: 100, color: "text-[var(--color-gold-light)] font-black" },
-            { name: "✨ 보물급(寶물급) 탁본", points: 70, color: "text-[var(--color-gold)] font-bold" },
-            { name: "🔷 뛰어난 사초(史草)", points: 50, color: "text-blue-400 font-bold" },
-            { name: "🟢 온전한 기록", points: 30, color: "text-emerald-400 font-medium" },
-            { name: "⚪ 평범한 기록", points: 10, color: "text-[var(--text-muted)] font-medium" }
+            { name: "👑 국보급 탁본", points: 70, color: "text-[var(--color-gold-light)] font-black" },
+            { name: "✨ 보물급 탁본", points: 50, color: "text-[var(--color-gold)] font-bold" },
+            { name: "🔷 뛰어난 사초", points: 40, color: "text-blue-400 font-bold" },
+            { name: "⚪ 평범한 기록", points: 30, color: "text-[var(--text-muted)] font-medium" }
         ];
+
+        const scheduleDB = {
+            1: [
+                { time: "09:00 - 11:30", title: "학교 출발 및 식당 이동", note: "이동 시간 약 2시간 30분" },
+                { time: "11:30 - 12:30", title: "점심 (산내순두부)", note: "정리 시간 5분" },
+                { time: "12:35 - 12:45", title: "이동", note: "이동 시간 약 10분" },
+                { time: "12:45 - 13:45", title: "실상사", note: "정리 시간 5분" },
+                { time: "13:50 - 14:15", title: "이동", note: "이동 시간 약 25분" },
+                { time: "14:15 - 15:30", title: "남원 유곡리와 두락리 고분군", note: "정리 시간 5분" },
+                { time: "15:35 - 16:05", title: "이동", note: "이동 시간 약 30분" },
+                { time: "16:05 - 17:20", title: "광한루원", note: "" },
+                { time: "17:20 - 17:25", title: "이동", note: "이동 시간 약 5분" },
+                { time: "17:25 - 18:40", title: "저녁 (맛고기)", note: "" },
+                { time: "18:40 - 19:40", title: "이동 및 숙소", note: "이동 시간 약 1시간" },
+                { time: "20:30 - ", title: "강평회 및 레크리에이션", note: "" }
+            ],
+            2: [
+                { time: "09:00 - 10:20", title: "이동", note: "이동 시간 약 1시간 20분" },
+                { time: "10:20 - 11:20", title: "호남호국기념관", note: "정리 시간 5분" },
+                { time: "11:25 - 11:40", title: "이동", note: "이동 시간 약 15분" },
+                { time: "11:40 - 12:30", title: "점심 (울촌푸드)", note: "정리 시간 5분" },
+                { time: "12:35 - 13:15", title: "이동", note: "이동 시간 약 40분" },
+                { time: "13:15 - 14:15", title: "송광사", note: "정리 시간 5분" },
+                { time: "14:20 - 14:50", title: "이동", note: "이동 시간 약 30분" },
+                { time: "14:50 - 16:30", title: "낙안읍성", note: "정리 시간 5분" },
+                { time: "16:35 - 17:35", title: "숙소 이동", note: "이동 시간 약 1시간" },
+                { time: "18:00 - 18:20", title: "강평회", note: "" },
+                { time: "19:00 - ", title: "저녁 (바비큐)", note: "" }
+            ],
+            3: [
+                { time: "10:20 - 11:10", title: "이동", note: "이동 시간 약 50분" },
+                { time: "11:10 - 12:00", title: "점심(공양)", note: "" },
+                { time: "12:00 - 13:30", title: "화엄사", note: "정리 시간 5분" },
+                { time: "13:35 - 14:10", title: "이동", note: "이동 시간 약 35분" },
+                { time: "14:10 - 15:30", title: "남원 만인의총", note: "" },
+                { time: "15:30 - 15:40", title: "이동", note: "이동시간 약 10분" },
+                { time: "15:40 - 15:45", title: "남원역", note: "" },
+                { time: "15:45 - 18:15", title: "귀교", note: "이동시간 약 2시간 30분" }
+            ]
+        };
 
         const defaultUsersDB = {
             "token_kim123": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
@@ -702,14 +767,19 @@
         let currentResetType = 'progress';
         let isQuizProcessing = false;
         let currentSelectedMultiple = [];
+        let scheduleRefreshInterval = null; 
 
         function getInitialDayByKST() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const kst = new Date(utc + (9 * 3600000));
-            const dateStr = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, '0')}-${String(kst.getDate()).padStart(2, '0')}`;
-            if (dateStr === "2026-10-01") return 2; 
-            if (dateStr === "2026-10-02") return 3; 
+            const yyyy = kst.getFullYear();
+            const mm = String(kst.getMonth() + 1).padStart(2, '0');
+            const dd = String(kst.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+
+            if (dateStr === "2026-10-02") return 3;
+            if (dateStr === "2026-10-01") return 2;
             return 1; 
         }
 
@@ -735,7 +805,20 @@
                 
                 let localData = safeGetItem('local_usersDB');
                 if (localData) {
-                    try { usersDB = JSON.parse(localData); } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
+                    try { 
+                        usersDB = JSON.parse(localData); 
+                        Object.keys(usersDB).forEach(key => {
+                            let u = usersDB[key];
+                            if (!u.failedAttempts) u.failedAttempts = {};
+                            if (!u.photoStatus) u.photoStatus = {};
+                            if (!u.photoData) u.photoData = {};
+                            if (!u.photoVerified) u.photoVerified = {};
+                            if (!u.bonusHistory) u.bonusHistory = {}; 
+                            if (!u.solved) u.solved = [];
+                            else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
+                            if (u.score === undefined) u.score = 0;
+                        });
+                    } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
                 } else {
                     usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
                 }
@@ -772,7 +855,10 @@
                             if (!u.photoData) u.photoData = {};
                             if (!u.photoVerified) u.photoVerified = {};
                             if (!u.bonusHistory) u.bonusHistory = {}; 
+                            
                             if (!u.solved) u.solved = [];
+                            else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
+                            
                             if (u.score === undefined) u.score = 0;
                         });
                     } else {
@@ -788,7 +874,7 @@
                         else if (currentToken && usersDB[currentToken]) {
                             currentUser = usersDB[currentToken];
                             updateHeaderUI();
-                            if(currentSelectedDay) renderQuizList();
+                            if(currentSelectedDay) { renderQuizList(); renderScheduleList(); }
                         }
                         renderLeaderboard();
                     }
@@ -982,10 +1068,21 @@
             }
 
             let pts = 0; let title = ""; let colorClass = ""; let icon = "🎭";
-            if (code === 'plus50') { pts = 50; title = "보부상과 거래 성공!"; colorClass = "text-[var(--color-gold)]"; icon="🎒"; }
-            else if (code === 'minus30') { pts = -30; title = "산적의 습격!"; colorClass = "text-[var(--color-red-light)]"; icon="🥷"; }
-            else if (code === 'plus100') { pts = 100; title = "거상에게 후원받음!"; colorClass = "text-[var(--color-gold-light)]"; icon="👑"; }
-            else { pts = 10; title = "행인과 물물교환!"; colorClass = "text-blue-400"; icon="🪙"; }
+            
+            if (code === 'plus40') { pts = 40; title = "보부상과 거래 성공!"; colorClass = "text-[var(--color-gold)]"; icon="🧧"; }
+            else if (code === 'minus50') { pts = -50; title = "도적의 습격!"; colorClass = "text-[var(--color-red-light)]"; icon="🥷"; }
+            else if (code === 'plus80') { pts = 80; title = "거상에게 후원받음!"; colorClass = "text-[var(--color-gold-light)]"; icon="👑"; }
+            else if (code === 'minus30') { pts = -30; title = "장터 소매치기에게 털리다!"; colorClass = "text-[var(--color-red-light)]"; icon="🏃"; }
+            else if (code === 'plus50') { pts = 50; title = "관아의 포상"; colorClass = "text-[var(--color-gold)]"; icon="🧧"; }
+            else if (code === 'minus10') { pts = -10; title = "수문장의 불심검문"; colorClass = "text-[var(--color-red-light)]"; icon="🛂"; }
+            else if (code === 'black_market') { 
+                if (Math.random() < 0.5) {
+                    pts = 40; title = "장물아비와의 은밀한 거래 성공!"; colorClass = "text-[var(--color-gold)]"; icon="⚖️";
+                } else {
+                    pts = -20; title = "장물아비의 배신과 위조 엽전!"; colorClass = "text-[var(--color-red-light)]"; icon="🕶️";
+                }
+            }
+            else { pts = 20; title = "행인과 물물교환!"; colorClass = "text-blue-400"; icon="🪙"; }
 
             currentUser.score += pts; 
             
@@ -1090,26 +1187,148 @@
         }
 
         function switchTab(tab) {
-            const qBtn = document.getElementById("nav-quiz-btn"), rBtn = document.getElementById("nav-rank-btn");
-            const qCon = document.getElementById("tab-quiz-content"), rCon = document.getElementById("tab-rank-content");
+            const qBtn = document.getElementById("nav-quiz-btn"), rBtn = document.getElementById("nav-rank-btn"), sBtn = document.getElementById("nav-schedule-btn");
+            const qCon = document.getElementById("tab-quiz-content"), rCon = document.getElementById("tab-rank-content"), sCon = document.getElementById("tab-schedule-content");
+            const daySelector = document.getElementById("day-selector-container");
+
+            qBtn.classList.replace("text-[var(--color-gold)]", "text-[var(--text-disabled)]");
+            rBtn.classList.replace("text-[var(--color-gold)]", "text-[var(--text-disabled)]");
+            sBtn.classList.replace("text-[var(--color-gold)]", "text-[var(--text-disabled)]");
+            qCon.classList.add("hidden"); rCon.classList.add("hidden"); sCon.classList.add("hidden");
+            
+            if (scheduleRefreshInterval) {
+                clearInterval(scheduleRefreshInterval);
+                scheduleRefreshInterval = null;
+            }
+
             if (tab === 'quiz') {
-                qBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]"); rBtn.classList.replace("text-[var(--color-gold)]", "text-[var(--text-disabled)]");
-                qCon.classList.remove("hidden"); rCon.classList.add("hidden"); renderQuizList();
-            } else {
-                rBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]"); qBtn.classList.replace("text-[var(--color-gold)]", "text-[var(--text-disabled)]");
-                qCon.classList.add("hidden"); rCon.classList.remove("hidden"); renderLeaderboard();
+                qBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]");
+                qCon.classList.remove("hidden");
+                daySelector.classList.remove("hidden");
+                renderQuizList();
+            } else if (tab === 'rank') {
+                rBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]");
+                rCon.classList.remove("hidden");
+                daySelector.classList.add("hidden");
+                renderLeaderboard();
+            } else if (tab === 'schedule') {
+                sBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]");
+                sCon.classList.remove("hidden");
+                daySelector.classList.remove("hidden");
+
+                const todayKST = getInitialDayByKST();
+                if (currentSelectedDay !== todayKST) {
+                    switchDay(todayKST);
+                } else {
+                    renderScheduleList();
+                }
+
+                scheduleRefreshInterval = setInterval(renderScheduleList, 60000); 
             }
         }
+
         function switchDay(day) {
             currentSelectedDay = day;
             for (let i = 1; i <= 3; i++) {
                 const btn = document.getElementById(`day${i}-btn`);
                 if (btn) {
-                    if (i === day) btn.className = "px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--color-gold)] text-[var(--text-on-gold)] shadow-md";
-                    else btn.className = "px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)]";
+                    if (i === day) btn.className = "px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--color-gold)] text-[var(--text-on-gold)] shadow-md transition-all";
+                    else btn.className = "px-4 py-2 text-xs font-bold rounded-full font-serif-title bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-muted)] transition-all";
                 }
             }
             renderQuizList();
+            if (!document.getElementById("tab-schedule-content").classList.contains("hidden")) {
+                renderScheduleList();
+            }
+        }
+
+        function getScheduleState(day, timeStr) {
+            if (!timeStr || timeStr === "안내") return 'future';
+
+            const dates = { 1: "2026/09/30", 2: "2026/10/01", 3: "2026/10/02" };
+            const targetDateStr = dates[day];
+            if (!targetDateStr) return 'future';
+
+            const kstString = new Date().toLocaleString("en-US", {timeZone: "Asia/Seoul"});
+            const kst = new Date(kstString);
+
+            const parts = timeStr.split('-');
+            if (parts.length < 2) return 'future';
+
+            let start = parts[0].trim();
+            if(start.length === 4) start = "0" + start;
+            
+            let end = parts[1].trim();
+            if (end === "") end = "23:59";
+            if (end.length === 4) end = "0" + end;
+
+            const startTime = new Date(`${targetDateStr} ${start}:00`);
+            const endTime = new Date(`${targetDateStr} ${end}:59`);
+
+            if (kst >= startTime && kst <= endTime) return 'current';
+            if (kst > endTime) return 'past';
+            return 'future';
+        }
+
+        function renderScheduleList() {
+            const container = document.getElementById("schedule-list");
+            const titleEl = document.getElementById("schedule-day-title");
+            const dateEl = document.getElementById("schedule-date-badge");
+            
+            if (titleEl && dateEl) {
+                titleEl.innerText = `${currentSelectedDay}일차 일정안내`;
+                if (currentSelectedDay === 1) dateEl.innerText = "9월 30일 (水)";
+                else if (currentSelectedDay === 2) dateEl.innerText = "10월 1일 (木)";
+                else if (currentSelectedDay === 3) dateEl.innerText = "10월 2일 (金)";
+            }
+
+            const daySchedule = scheduleDB[currentSelectedDay] || [];
+            container.innerHTML = "";
+            
+            if (daySchedule.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-[var(--text-disabled)] text-xs font-bold">일정 데이터가 없습니다.</div>`;
+                return;
+            }
+
+            let html = `<div class="relative border-l-2 border-[var(--border-gold-alpha)] ml-2.5 space-y-6 pb-2 mt-4">`;
+            
+            daySchedule.forEach(item => {
+                const state = getScheduleState(currentSelectedDay, item.time);
+                
+                let dotHtml = '';
+                let timeColor = '';
+                let titleColor = '';
+                let badgeHtml = '';
+                
+                if (state === 'current') {
+                    dotHtml = `<div class="absolute w-4 h-4 bg-[var(--color-gold)] rounded-full -left-[9px] top-0.5 shadow-[0_0_12px_rgba(216,177,104,0.9)] animate-pulse border-2 border-[var(--bg-card)]"></div>`;
+                    timeColor = "text-[var(--color-gold-light)] drop-shadow-md";
+                    titleColor = "text-[var(--text-main)] drop-shadow-md";
+                    badgeHtml = `<span class="ml-2 text-[9px] bg-gradient-to-r from-[var(--color-red)] to-[var(--color-red-light)] text-[var(--text-on-gold)] px-1.5 py-0.5 rounded shadow-md animate-pulse align-middle font-sans">현재 진행중</span>`;
+                } else if (state === 'past') {
+                    dotHtml = `<div class="absolute w-3 h-3 bg-[var(--border-dark)] rounded-full -left-[7px] top-1 border-2 border-[var(--bg-card)] opacity-60"></div>`;
+                    timeColor = "text-[var(--text-disabled)] opacity-60";
+                    titleColor = "text-[var(--text-disabled)] opacity-60";
+                } else {
+                    dotHtml = `<div class="absolute w-3 h-3 bg-[var(--bg-card)] border-2 border-[var(--color-gold-dark)] rounded-full -left-[7px] top-1"></div>`;
+                    timeColor = "text-[var(--color-gold)] opacity-80";
+                    titleColor = "text-[var(--text-muted)]";
+                }
+
+                let noteOpacity = state === 'past' ? 'opacity-50' : '';
+                let noteHtml = item.note ? `<p class="text-[10px] text-[var(--text-disabled)] mt-1.5 ml-1 bg-[var(--bg-container)] px-2 py-0.5 rounded-full inline-block border border-[var(--border-dark)] ${noteOpacity}">${item.note}</p>` : '';
+                
+                html += `
+                    <div class="relative pl-6 transition-all duration-500">
+                        ${dotHtml}
+                        <p class="text-xs font-mono font-extrabold ${timeColor} flex items-center">${item.time} ${badgeHtml}</p>
+                        <p class="text-sm font-bold font-serif-title mt-0.5 leading-tight ${titleColor}">${item.title}</p>
+                        ${noteHtml}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
         }
 
         function renderQuizList() {
@@ -1124,12 +1343,13 @@
                 const maxStep = subQuizzes.length; 
                 
                 let solvedCount = 0, lockedCount = 0;
+                let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
                 subQuizzes.forEach(q => { 
-                    if (currentUser.solved.includes(q.id)) solvedCount++; 
-                    if ((currentUser.failedAttempts[q.id] || 0) >= 2) lockedCount++; 
+                    if (solvedArr.includes(q.id)) solvedCount++; 
+                    if (((currentUser.failedAttempts || {})[q.id] || 0) >= 3) lockedCount++; 
                 });
                 
-                const pStatus = currentUser.photoStatus[courseId]; 
+                const pStatus = (currentUser.photoStatus || {})[courseId]; 
                 const isVerified = checkGpsSessionValid(courseId);
                 const isFullyDone = ((solvedCount + lockedCount) === maxStep && pStatus === 'claimed');
 
@@ -1141,7 +1361,7 @@
                 if (isFullyDone) {
                     if (courseId === 'course_06' && !isNaganLocked) {
                         statusBadge = `<span class="bg-[var(--color-gold)]/20 text-[var(--color-gold-light)] border border-[var(--border-gold-alpha)] text-[10px] px-2.5 py-1 rounded-full font-bold">🎭 인물 조우 대기중</span>`;
-                        btnText = '보부상/산적 이벤트 열기'; 
+                        btnText = '보부상/도적 이벤트 열기'; 
                         btnClass = 'bg-gradient-to-r from-[var(--color-red)] to-[var(--color-gold)] text-[var(--text-on-gold)] font-bold';
                     } else {
                         statusBadge = `<span class="bg-[var(--border-dark)] text-[var(--text-disabled)] border border-[var(--border-dark)] text-[10px] px-2.5 py-1 rounded-full font-bold font-serif-title">🔒 답사 완료</span>`;
@@ -1168,7 +1388,7 @@
                 } else if (pStatus === 'approved') { 
                     mainTreasureBtnHTML = `<button onclick="triggerDirectTreasureGacha('${courseId}')" class="w-full mt-2 bg-gradient-to-r from-[var(--color-gold-dark)] via-[var(--color-gold)] to-[var(--color-gold-dark)] text-[var(--text-on-gold)] font-black py-3.5 px-4 rounded-xl text-xs flex justify-between items-center treasure-glow hover:brightness-110 transition-finez active:scale-95"><div><span>💮</span> <span class="ml-1 font-serif-title">기록의 완성, 우리 조 낙관 찍기! (클릭)</span></div> <span>→</span></button>`;
                 } else if (pStatus === 'claimed') { 
-                    const savedGacha = currentUser.photoVerified[courseId] || {}; 
+                    const savedGacha = (currentUser.photoVerified || {})[courseId] || {}; 
                     mainTreasureBtnHTML = `<button disabled class="w-full mt-2 bg-[var(--bg-header)] border border-[var(--border-dark)] text-[var(--text-disabled)] font-medium py-3 px-4 rounded-xl text-[11px] flex justify-between items-center"><div><span>📜</span> <span class="ml-1">낙관 기록 완료: ${savedGacha.tier} (+${savedGacha.points}P)</span></div> <span>✓</span></button>`; 
                 }
 
@@ -1188,12 +1408,17 @@
             document.getElementById("modal-gacha-section").classList.add("hidden");
             document.getElementById("modal-goblin-section").classList.add("hidden");
 
-            const pStatus = currentUser.photoStatus[currentBaseCourseId];
+            const pStatus = (currentUser.photoStatus || {})[currentBaseCourseId];
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
             const maxStep = subQuizzes.length;
             
             let solvedCount = 0, lockedCount = 0;
-            subQuizzes.forEach(q => { if(currentUser.solved.includes(q.id)) solvedCount++; if((currentUser.failedAttempts[q.id]||0) >= 2) lockedCount++; });
+            let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+            
+            subQuizzes.forEach(q => { 
+                if(solvedArr.includes(q.id)) solvedCount++; 
+                if(((currentUser.failedAttempts || {})[q.id] || 0) >= 3) lockedCount++; 
+            });
             
             const quizCompleted = ((solvedCount + lockedCount) === maxStep);
             const isFullyDone = (quizCompleted && pStatus === 'claimed');
@@ -1207,7 +1432,7 @@
             } else {
                 quizBtn.onclick = startSequentialQuiz;
                 quizBtn.className = "w-full bg-[var(--bg-btn-surface)] hover:bg-[var(--bg-btn-hover)] border border-[var(--border-gold-alpha)] text-[var(--text-main)] font-bold py-3.5 px-4 rounded-xl text-xs flex justify-between items-center shadow-sm active:scale-95 transition-all";
-                quizBtn.innerHTML = `<span id="branch-quiz-text">📝 역사 퀴즈 풀기 (연속 ${maxStep}문항)</span><span class="text-[var(--color-gold)] font-black text-lg leading-none pb-0.5">›</span>`;
+                quizBtn.innerHTML = `<span id="branch-quiz-text">📝 역사 퀴즈 풀기</span><span class="text-[var(--color-gold)] font-black text-lg leading-none pb-0.5">›</span>`;
             }
 
             if (currentBaseCourseId === "course_06") {
@@ -1230,7 +1455,7 @@
             document.getElementById("modal-branch-section").classList.add("hidden");
             document.getElementById("modal-photo-section").classList.remove("hidden");
             
-            const pStatus = currentUser.photoStatus[currentBaseCourseId];
+            const pStatus = (currentUser.photoStatus || {})[currentBaseCourseId];
             const submitBtn = document.getElementById("photo-submit-btn");
             const box = document.getElementById("photo-box-container");
             const prompt = document.getElementById("photo-box-prompt");
@@ -1240,7 +1465,7 @@
                 box.onclick = null; box.className = "w-full h-44 border-2 border-[var(--border-dark)] bg-[var(--bg-input)] rounded-2xl flex flex-col items-center justify-center overflow-hidden relative cursor-not-allowed";
                 submitBtn.classList.add("hidden"); 
                 
-                const imgData = currentUser.photoData[currentBaseCourseId];
+                const imgData = (currentUser.photoData || {})[currentBaseCourseId];
                 if(imgData) { preview.src = imgData; preview.classList.remove("hidden"); prompt.classList.add("hidden"); } 
                 else { prompt.innerHTML = `<div class="text-2xl">🔒</div><div class="text-[11px] text-[var(--text-sub)] mt-2">이미 제출 처리된 기록입니다<br>(수정 불가)</div>`; prompt.classList.remove("hidden"); }
             } else {
@@ -1355,12 +1580,17 @@
         }
 
         function openQuizModal(courseId) {
-            const pStatus = currentUser.photoStatus[courseId];
+            const pStatus = (currentUser.photoStatus || {})[courseId];
             const subQuizzes = quizzesDB.filter(q => q.course === courseId);
             const maxStep = subQuizzes.length;
 
             let solvedCount = 0, lockedCount = 0;
-            subQuizzes.forEach(q => { if (currentUser.solved.includes(q.id)) solvedCount++; if ((currentUser.failedAttempts[q.id] || 0) >= 2) lockedCount++; });
+            let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+            
+            subQuizzes.forEach(q => { 
+                if (solvedArr.includes(q.id)) solvedCount++; 
+                if (((currentUser.failedAttempts || {})[q.id] || 0) >= 3) lockedCount++; 
+            });
             const isFullyDone = ((solvedCount + lockedCount) === maxStep && pStatus === 'claimed');
 
             if (isFullyDone) {
@@ -1403,7 +1633,9 @@
 
         function startSequentialQuiz() {
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
-            pendingQuizQueue = subQuizzes.filter(q => !currentUser.solved.includes(q.id) && (currentUser.failedAttempts[q.id] || 0) < 2);
+            let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+            
+            pendingQuizQueue = subQuizzes.filter(q => !solvedArr.includes(q.id) && ((currentUser.failedAttempts || {})[q.id] || 0) < 3);
             if (pendingQuizQueue.length === 0) { checkAndTriggerTotalScoreReport(subQuizzes); alert("더 이상 풀 수 있는 문항이 없습니다."); return; }
             document.getElementById("modal-branch-section").classList.add("hidden"); document.getElementById("modal-quiz-section").classList.remove("hidden");
             loadNextQuestionFromQueue();
@@ -1434,8 +1666,11 @@
             const isMultiple = quiz.type === 'multiple';
             const subQuizzes = quizzesDB.filter(q => q.course === currentBaseCourseId);
 
+            const failedCount = (currentUser.failedAttempts || {})[quiz.id] || 0;
+            const currentPoints = failedCount === 0 ? quiz.points : Math.max(0, quiz.points - 5);
+
             document.getElementById("modal-quiz-step-indicator").innerText = `${quiz.step} / ${subQuizzes.length} 단계`;
-            document.getElementById("modal-quiz-points-indicator").innerText = `${quiz.points}점`;
+            document.getElementById("modal-quiz-points-indicator").innerText = `${currentPoints}점`; 
             
             const existingBadge = document.getElementById("multi-choice-badge");
             if(existingBadge) existingBadge.remove();
@@ -1445,14 +1680,24 @@
             }
             
             document.getElementById("modal-question").innerText = quiz.question;
-            const failedCount = currentUser.failedAttempts[quiz.id] || 0;
-            document.getElementById("modal-attempts-left").innerText = `기회: ${2 - failedCount}회`;
+            document.getElementById("modal-attempts-left").innerText = `기회: ${3 - failedCount}회`;
             
             const hintBox = document.getElementById("modal-hint-box");
-            if (failedCount === 1 && quiz.hint) { document.getElementById("modal-hint-text").innerText = quiz.hint; hintBox.classList.remove("hidden"); } 
-            else hintBox.classList.add("hidden"); 
+            if (failedCount >= 1 && quiz.hint) { 
+                document.getElementById("modal-hint-text").innerText = quiz.hint; 
+                hintBox.classList.remove("hidden"); 
+            } else {
+                hintBox.classList.add("hidden"); 
+            }
 
             const optionsContainer = document.getElementById("modal-options"); optionsContainer.innerHTML = "";
+            
+            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단 (잠금 유지)
+            optionsContainer.classList.add("pointer-events-none");
+            setTimeout(() => {
+                optionsContainer.classList.remove("pointer-events-none");
+            }, 600);
+
             quiz.options.forEach(opt => {
                 const btn = document.createElement("button");
                 if (isMultiple) {
@@ -1477,6 +1722,7 @@
                     };
                 } else {
                     btn.className = "w-full text-left p-4 border border-[var(--border-gold-alpha)] bg-[var(--bg-header)] hover:bg-[var(--bg-btn-surface)] hover:border-[var(--color-gold)]/60 rounded-xl text-xs font-medium text-[var(--text-main)] flex justify-between items-center transition-all active:scale-[0.98] mb-2";
+                    btn.dataset.opt = opt;
                     btn.innerHTML = `<span class="flex-1 leading-relaxed pr-2">${opt}</span> <span class="text-[var(--color-gold)] font-black text-lg leading-none pb-0.5">›</span>`;
                     btn.onclick = function() { handleAnswerSubmit(opt, this); };
                 }
@@ -1501,13 +1747,13 @@
             returnBtn.innerText = "↩ 미션 선택으로 돌아가기"; returnBtn.onclick = showChoiceSection; optionsContainer.appendChild(returnBtn);
         }
 
-        // [핵심 수정] 단수 선택 오답 시 원상 복구 로직
+        // 단일 선택 문제 제출 로직
         function handleAnswerSubmit(selected, btnElement) {
             if (isQuizProcessing) return; 
             isQuizProcessing = true; 
             
             const qId = currentActiveQuiz.id; 
-            let failedCount = currentUser.failedAttempts[qId] || 0;
+            let failedCount = (currentUser.failedAttempts || {})[qId] || 0;
             const optionsContainer = document.getElementById("modal-options"); 
             const optionButtons = Array.from(optionsContainer.getElementsByTagName("button"));
             
@@ -1520,34 +1766,39 @@
                 optionButtons.forEach(b => b.classList.add("opacity-40"));
                 btnElement.classList.remove("opacity-40", "hover:bg-[var(--bg-btn-surface)]");
                 
-                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center transition-all z-10 relative mb-2";
-                btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ ${selected}</span> <span class="text-emerald-400 font-black">+${currentActiveQuiz.points}P</span>`;
+                const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
+
+                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-200 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
-                currentUser.score += currentActiveQuiz.points; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync();
+                if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
+                currentUser.score += earnedPoints; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync();
                 pendingQuizQueue.shift();
                 
-                setTimeout(() => { loadNextQuestionFromQueue(); }, 2000);
+                setTimeout(() => { loadNextQuestionFromQueue(); }, 1500); 
             } else {
                 failedCount++; 
+                if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
                 currentUser.failedAttempts[qId] = failedCount; 
                 usersDB[currentToken] = currentUser; saveAndSync();
                 
-                // 원래 상태 저장 (0.8초 뒤 복구를 위해)
                 const originalHTML = btnElement.innerHTML;
                 const originalClass = btnElement.className;
 
-                btnElement.className = "w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2";
-                btnElement.innerHTML = `<span class="flex-1">❌ 오답</span>`;
+                btnElement.className = "w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect transition-all mb-2";
+                btnElement.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                 
-                document.getElementById("modal-attempts-left").innerText = `기회: ${2 - failedCount}회`;
+                document.getElementById("modal-attempts-left").innerText = `기회: ${3 - failedCount}회`;
 
-                if (failedCount === 1) {
+                const newScore = Math.max(0, currentActiveQuiz.points - 5);
+                document.getElementById("modal-quiz-points-indicator").innerText = `${newScore}점`;
+
+                if (failedCount === 1 || failedCount === 2) {
                     if (currentActiveQuiz.hint) {
                         document.getElementById("modal-hint-text").innerText = currentActiveQuiz.hint;
                         document.getElementById("modal-hint-box").classList.remove("hidden");
                     }
                     setTimeout(() => {
-                        // 오답 표시 후 원래 상태로 복원
                         btnElement.className = originalClass;
                         btnElement.innerHTML = originalHTML;
 
@@ -1556,24 +1807,34 @@
                             b.disabled = false;
                             b.classList.remove("pointer-events-none");
                         });
-                    }, 800);
-                } else if (failedCount >= 2) {
-                    optionButtons.forEach(b => b.classList.add("opacity-40"));
-                    btnElement.classList.remove("opacity-40");
-                    btnElement.innerHTML = `<span class="flex-1 text-[var(--color-red-lighter)]">🔒 기회 소진 (다음으로 이동...)</span>`;
-                    setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 1500);
+                    }, 1200);
+                } else if (failedCount >= 3) {
+                    document.getElementById("modal-attempts-left").innerText = `🔒 기회 소진`;
+                    
+                    optionButtons.forEach(b => {
+                        if (b !== btnElement) {
+                            b.classList.add("opacity-30"); 
+                        }
+                        if (b.dataset.opt === currentActiveQuiz.answer) {
+                            b.classList.remove("opacity-30");
+                            b.className = "w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                            b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${currentActiveQuiz.answer}</span>`;
+                        }
+                    });
+                    
+                    setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 2400); 
                 }
             }
         }
 
-        // [핵심 수정] 복수 선택 오답 시 원상 복구 로직
+        // 다중 선택 문제 제출 로직
         function handleMultipleSubmit(submitBtn) {
             if (isQuizProcessing) return;
             if (currentSelectedMultiple.length === 0) return alert("정답을 1개 이상 선택해 주세요.");
 
             isQuizProcessing = true;
             const qId = currentActiveQuiz.id;
-            let failedCount = currentUser.failedAttempts[qId] || 0;
+            let failedCount = (currentUser.failedAttempts || {})[qId] || 0;
             const optionsContainer = document.getElementById("modal-options");
             const optionButtons = Array.from(optionsContainer.getElementsByClassName("multiple-opt-btn"));
 
@@ -1587,47 +1848,59 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ ${opt}</span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
                 });
                 
-                const ptsDiv = document.createElement("div");
-                ptsDiv.className = "text-center text-emerald-400 font-black text-lg mt-2";
-                ptsDiv.innerText = `+${currentActiveQuiz.points}P`;
-                optionsContainer.insertBefore(ptsDiv, submitBtn);
+                const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
+                
+                submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
+                submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2">+${earnedPoints}P</span>`;
 
-                currentUser.score += currentActiveQuiz.points; currentUser.solved.push(qId);
+                if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
+                currentUser.score += earnedPoints; currentUser.solved.push(qId);
                 usersDB[currentToken] = currentUser; saveAndSync(); pendingQuizQueue.shift();
 
-                setTimeout(() => { loadNextQuestionFromQueue(); }, 2000);
+                setTimeout(() => { loadNextQuestionFromQueue(); }, 1500); 
             } else {
-                failedCount++; currentUser.failedAttempts[qId] = failedCount;
+                failedCount++; 
+                if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
+                currentUser.failedAttempts[qId] = failedCount;
                 usersDB[currentToken] = currentUser; saveAndSync();
 
-                // 원래 상태 저장 (0.8초 뒤 복구를 위해)
                 const originalStates = [];
 
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (currentSelectedMultiple.includes(opt)) {
                         originalStates.push({ el: b, html: b.innerHTML, cls: b.className });
-                        b.className = "multiple-opt-btn w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2";
-                        b.innerHTML = `<span class="flex-1">❌ 오답</span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2 transition-all";
+                        b.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                     }
                 });
 
-                document.getElementById("modal-attempts-left").innerText = `기회: ${2 - failedCount}회`;
+                document.getElementById("modal-attempts-left").innerText = `기회: ${3 - failedCount}회`;
 
-                if (failedCount === 1) {
+                const newScore = Math.max(0, currentActiveQuiz.points - 5);
+                document.getElementById("modal-quiz-points-indicator").innerText = `${newScore}점`;
+
+                if (failedCount === 1 || failedCount === 2) {
                     if (currentActiveQuiz.hint) {
                         document.getElementById("modal-hint-text").innerText = currentActiveQuiz.hint;
                         document.getElementById("modal-hint-box").classList.remove("hidden");
                     }
+                    
+                    const originalSubmitClass = submitBtn.className;
+                    const originalSubmitHTML = submitBtn.innerHTML;
+                    submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
+                    submitBtn.className = "w-full bg-[var(--color-red)]/20 border-2 border-[var(--color-red)] text-[var(--color-red-lighter)] font-black py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 shake-effect transition-all";
+                    submitBtn.innerHTML = "❌ 오답입니다!";
+
                     setTimeout(() => { 
-                        // 오답 표시 후 원래 선택 상태로 복원
                         originalStates.forEach(state => {
                             state.el.className = state.cls;
                             state.el.innerHTML = state.html;
@@ -1635,31 +1908,61 @@
 
                         isQuizProcessing = false; 
                         submitBtn.disabled = false;
+                        submitBtn.className = originalSubmitClass;
+                        submitBtn.innerHTML = originalSubmitHTML;
                         submitBtn.classList.remove("opacity-50");
                         optionButtons.forEach(b => {
                             b.disabled = false;
                             b.classList.remove("pointer-events-none");
                         });
-                    }, 800);
-                } else if (failedCount >= 2) {
-                    setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 1500);
+                    }, 1200);
+                } else if (failedCount >= 3) {
+                    document.getElementById("modal-attempts-left").innerText = `🔒 기회 소진`;
+                    
+                    optionButtons.forEach(b => {
+                        if (!currentSelectedMultiple.includes(b.dataset.opt)) {
+                            b.classList.add("opacity-30");
+                        }
+                        if (correctAnswers.includes(b.dataset.opt)) {
+                            b.classList.remove("opacity-30");
+                            b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                            b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${b.dataset.opt}</span>`;
+                        }
+                    });
+                    
+                    submitBtn.innerHTML = "🔒 기회 소진 (다음 문제로...)";
+                    submitBtn.className = "w-full bg-[var(--border-dark)] text-[var(--text-disabled)] font-bold py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 pointer-events-none";
+                    
+                    setTimeout(() => { pendingQuizQueue.shift(); loadNextQuestionFromQueue(); }, 2400); 
                 }
             }
         }
 
         function checkAndTriggerTotalScoreReport(subQuizzes) {
             let processedCount = 0; let correctCount = 0;
+            let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+            
             subQuizzes.forEach(q => {
-                if (currentUser.solved.includes(q.id)) { processedCount++; correctCount++; } 
-                else if ((currentUser.failedAttempts[q.id] || 0) >= 2) { processedCount++; }
+                if (solvedArr.includes(q.id)) { processedCount++; correctCount++; } 
+                else if (((currentUser.failedAttempts || {})[q.id] || 0) >= 3) { processedCount++; }
             });
-            if (processedCount === subQuizzes.length && !currentUser.photoVerified[currentBaseCourseId + "_report_done"]) {
-                currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true; usersDB[currentToken] = currentUser; saveAndSync();
-                setTimeout(() => { alert(`[역사 퀘스트 완료]\n총 ${subQuizzes.length}문제 중 [ ${correctCount}문제 ] 정답 통과!`); }, 400);
+            
+            // 모든 문제 처리가 완료되면
+            if (processedCount === subQuizzes.length) {
+                // 이 코스의 결과 모달을 아직 안 띄운 경우에만 실행
+                if (!(currentUser.photoVerified || {})[currentBaseCourseId + "_report_done"]) {
+                    if (!currentUser.photoVerified) currentUser.photoVerified = {};
+                    currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true; 
+                    usersDB[currentToken] = currentUser; saveAndSync();
+                    
+                    // 마지막 2.4초 딜레이가 끝난 후 겹치지 않게 안전하게 띄움
+                    setTimeout(() => { 
+                        alert(`[역사 퀘스트 완료]\n모든 문제를 풀었습니다!\n총 ${subQuizzes.length}문제 중 [ ${correctCount}문제 ] 정답 통과!`); 
+                    }, 800);
+                }
             }
         }
 
-        // 10. 사진 제출 및 낙관 연출 
         function triggerFilePicker() { document.getElementById("photo-hidden-file").click(); }
         function loadPhotoPreview(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -1684,7 +1987,13 @@
         function submitPhotoMission() {
             const previewImg = document.getElementById("photo-box-preview"); const dataUrl = previewImg.getAttribute("data-base64");
             if (!dataUrl) return alert("사진을 첨부해 주세요!");
-            currentUser.photoData[currentBaseCourseId] = dataUrl; currentUser.photoStatus[currentBaseCourseId] = 'pending';
+            
+            if (!currentUser.photoData) currentUser.photoData = {};
+            currentUser.photoData[currentBaseCourseId] = dataUrl; 
+            
+            if (!currentUser.photoStatus) currentUser.photoStatus = {};
+            currentUser.photoStatus[currentBaseCourseId] = 'pending';
+            
             usersDB[currentToken] = currentUser; saveAndSync();
             alert("인증 사진이 전송되었습니다. 스태프 승인이 완료되면 낙관을 찍을 수 있습니다."); closeModal();
         }
@@ -1700,11 +2009,10 @@
             
             const rand = Math.random() * 100;
             
-            if (rand < 5.0) finalRolledReward = gachaTiers[0];          
-            else if (rand < 30.0) finalRolledReward = gachaTiers[1];    
-            else if (rand < 80.0) finalRolledReward = gachaTiers[2];    
-            else if (rand < 95.0) finalRolledReward = gachaTiers[3];    
-            else finalRolledReward = gachaTiers[4];                     
+            if (rand < 2.0) finalRolledReward = gachaTiers[0];          
+            else if (rand < 32.0) finalRolledReward = gachaTiers[1];    
+            else if (rand < 85.0) finalRolledReward = gachaTiers[2];    
+            else finalRolledReward = gachaTiers[3];                     
 
             const tDisp = document.getElementById("gacha-slot-tier"), pDisp = document.getElementById("gacha-slot-pts");
             tDisp.className = "text-2xl font-black tracking-tight gacha-roll text-[var(--text-sub)] font-serif-title";
@@ -1723,13 +2031,16 @@
         }
 
         function confirmGachaReward() {
+            if (!currentUser.photoVerified) currentUser.photoVerified = {};
             currentUser.photoVerified[currentBaseCourseId] = { tier: finalRolledReward.name, points: finalRolledReward.points, color: finalRolledReward.color };
-            currentUser.photoStatus[currentBaseCourseId] = 'claimed'; currentUser.score += finalRolledReward.points;
+            
+            if (!currentUser.photoStatus) currentUser.photoStatus = {};
+            currentUser.photoStatus[currentBaseCourseId] = 'claimed'; 
+            
+            currentUser.score += finalRolledReward.points;
             usersDB[currentToken] = currentUser; saveAndSync(); closeModal();
         }
 
-        // 11. 실시간 리더보드
-        let activeAccordionToken = null;
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
 
         function renderLeaderboard() {
@@ -1771,9 +2082,15 @@
                         }
 
                         let quizReceipts = "";
-                        user.solved.forEach(qId => { 
+                        let solvedArr = Array.isArray(user.solved) ? user.solved : Object.values(user.solved || {});
+                        solvedArr.forEach(qId => { 
                             const quiz = quizzesDB.find(q => q.id === qId); 
-                            if(quiz) { const course = coursesDB[quiz.course]; quizReceipts += `<div class="flex justify-between text-[11px] text-[var(--text-muted)] py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'} (${quiz.step}단계)</span><span class="font-mono text-[var(--color-gold)] font-bold">+${quiz.points}P</span></div>`; } 
+                            if(quiz) { 
+                                const course = coursesDB[quiz.course]; 
+                                const fails = (user.failedAttempts || {})[qId] || 0;
+                                const earnedPts = fails === 0 ? quiz.points : Math.max(0, quiz.points - 5);
+                                quizReceipts += `<div class="flex justify-between text-[11px] text-[var(--text-muted)] py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'} (${quiz.step}단계)</span><span class="font-mono text-[var(--color-gold)] font-bold">+${earnedPts}P</span></div>`; 
+                            } 
                         });
 
                         let bonusReceipts = "";
@@ -1781,7 +2098,7 @@
                             Object.values(user.bonusHistory).forEach(item => {
                                 let ptsText = item.points > 0 ? `+${item.points}P` : `${item.points}P`;
                                 let colorClass = item.points > 0 ? "text-[var(--color-gold)]" : "text-[var(--color-red-light)]";
-                                let iconStr = item.points > 0 ? "🎉" : "📉";
+                                let iconStr = item.points > 0 ? "➕" : "📉";
                                 bonusReceipts += `<div class="flex justify-between text-[11px] text-[var(--text-muted)] py-0.5"><span>${iconStr} 관리자: ${item.reason}</span><span class="font-mono ${colorClass} font-bold">${ptsText}</span></div>`;
                             });
                         }
@@ -1801,7 +2118,6 @@
             });
         }
 
-        // 12. 관제센터: 탭 전환 및 점수 모달
         function switchAdminTab(tab) {
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('admin-tab-' + tab).classList.remove('hidden');
@@ -1834,6 +2150,8 @@
             
             usersDB[activeScoreToken].score += finalAmount;
             const timestamp = Date.now();
+            
+            if (!usersDB[activeScoreToken].bonusHistory) usersDB[activeScoreToken].bonusHistory = {};
             usersDB[activeScoreToken].bonusHistory[timestamp] = { points: finalAmount, reason: reason };
             
             saveAndSync(); closeScoreModal();
@@ -1877,10 +2195,11 @@
             Object.keys(usersDB).forEach(token => {
                 const user = usersDB[token]; 
                 
-                let solvedCount = user.solved ? user.solved.length : 0;
+                let solvedArr = Array.isArray(user.solved) ? user.solved : Object.values(user.solved || {});
+                let solvedCount = solvedArr.length;
                 let lockedCount = 0;
                 if (user.failedAttempts) {
-                    Object.keys(user.failedAttempts).forEach(qId => { if (user.failedAttempts[qId] >= 2) lockedCount++; });
+                    Object.keys(user.failedAttempts).forEach(qId => { if (user.failedAttempts[qId] >= 3) lockedCount++; });
                 }
                 const totalProcessed = solvedCount + lockedCount;
                 const percent = Math.round((totalProcessed / totalQuizzes) * 100);
@@ -1895,8 +2214,8 @@
                         
                         let cSolved = 0, cLocked = 0;
                         subQuizzes.forEach(q => { 
-                            if(user.solved.includes(q.id)) cSolved++; 
-                            if((user.failedAttempts[q.id]||0) >= 2) cLocked++; 
+                            if(solvedArr.includes(q.id)) cSolved++; 
+                            if(((user.failedAttempts || {})[q.id] || 0) >= 3) cLocked++; 
                         });
                         let cTotal = cSolved + cLocked;
                         let statusColor = cTotal === maxStep ? "text-[var(--color-gold)] font-black" : "text-[var(--text-muted)]";
@@ -1932,9 +2251,9 @@
                     const maxStep = subQuizzes.length;
                     
                     let cSolved = 0, cLocked = 0;
-                    subQuizzes.forEach(q => { if(user.solved.includes(q.id)) cSolved++; if((user.failedAttempts[q.id]||0) >= 2) cLocked++; });
+                    subQuizzes.forEach(q => { if(solvedArr.includes(q.id)) cSolved++; if(((user.failedAttempts || {})[q.id] || 0) >= 3) cLocked++; }); 
                     
-                    const pStatus = user.photoStatus[courseId];
+                    const pStatus = (user.photoStatus || {})[courseId];
                     const isFullyDone = ((cSolved + cLocked) === maxStep && pStatus === 'claimed');
 
                     let dotClass = "dot-empty";
@@ -1967,15 +2286,22 @@
         }
 
         function openAdminPhotoModal(token, courseId) {
-            const user = usersDB[token]; const imgData = user.photoData[courseId];
+            const user = usersDB[token]; const imgData = (user.photoData || {})[courseId];
             document.getElementById("admin-photo-title").innerText = `${user.team} 인증샷 심사`;
             document.getElementById("admin-photo-img").src = imgData || ""; document.getElementById("admin-photo-modal").classList.remove("hidden");
-            document.getElementById("admin-photo-approve-btn").onclick = function() { usersDB[token].photoStatus[courseId] = 'approved'; saveAndSync(); closeAdminPhoto(); };
-            document.getElementById("admin-photo-reject-btn").onclick = function() { usersDB[token].photoStatus[courseId] = null; usersDB[token].photoData[courseId] = null; saveAndSync(); closeAdminPhoto(); };
+            document.getElementById("admin-photo-approve-btn").onclick = function() { 
+                if (!usersDB[token].photoStatus) usersDB[token].photoStatus = {};
+                usersDB[token].photoStatus[courseId] = 'approved'; 
+                saveAndSync(); closeAdminPhoto(); 
+            };
+            document.getElementById("admin-photo-reject-btn").onclick = function() { 
+                if (usersDB[token].photoStatus) usersDB[token].photoStatus[courseId] = null; 
+                if (usersDB[token].photoData) usersDB[token].photoData[courseId] = null; 
+                saveAndSync(); closeAdminPhoto(); 
+            };
         }
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
 
-        // 13. 애플리케이션 시작
         document.addEventListener("DOMContentLoaded", function() { 
             hideAllScreens(); 
             document.getElementById("loading-screen").classList.remove("hidden"); 
