@@ -780,6 +780,7 @@
         let isQuizProcessing = false;
         let currentSelectedMultiple = [];
         let scheduleRefreshInterval = null; 
+        let activeAccordionToken = null;
 
         function getInitialDayByKST() {
             const now = new Date();
@@ -975,7 +976,7 @@
                     triggerLoadingSequence();
                 }
             } else {
-                alert("등록되지 않은 코드입니다.\n(입력된 코드: " + token + ")");
+                alert("등록되지 않은 접속 코드입니다.\n(입력된 코드: " + token + ")");
                 logout();
             }
         }
@@ -1698,7 +1699,7 @@
 
             const optionsContainer = document.getElementById("modal-options"); optionsContainer.innerHTML = "";
             
-            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단
+            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단 (잠금 유지)
             optionsContainer.classList.add("pointer-events-none");
             setTimeout(() => {
                 optionsContainer.classList.remove("pointer-events-none");
@@ -1773,7 +1774,7 @@
                 
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
 
-                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2";
+                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -1862,7 +1863,7 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 transition-all";
+                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
