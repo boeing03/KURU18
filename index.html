@@ -202,6 +202,14 @@
                     📢 NFC 답사 카드 인식 시작하기
                 </button>
 
+                <!-- 수동 로그인 입력창 추가 -->
+                <div class="w-full flex space-x-2 mb-4">
+                    <input type="text" id="manual-token-input" class="flex-1 bg-[var(--bg-input)] border border-[var(--border-gold-alpha)] focus:border-[var(--color-gold)] rounded-xl px-4 py-3 text-sm font-bold text-[var(--text-main)] outline-none placeholder-[var(--text-disabled)]" placeholder="부여받은 조별 코드 직접 입력">
+                    <button onclick="handleInAppAuth(document.getElementById('manual-token-input').value.trim())" class="bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] px-4 rounded-xl font-bold hover:bg-[var(--bg-btn-hover)] transition-finez whitespace-nowrap active:scale-95 shadow-sm">
+                        접속
+                    </button>
+                </div>
+
                 <div class="w-full bg-[var(--bg-card)] border border-[var(--border-gold-alpha)] p-4 rounded-xl flex flex-col items-center justify-center text-center space-y-2 h-[80px]">
                     <div id="nfc-spinner" class="w-5 h-5 rounded-full border-[3px] border-[var(--border-dark)] border-t-[var(--color-gold)]"></div>
                     <p id="nfc-status-text" class="text-xs font-bold text-[var(--text-sub)]">인식 장치를 활성화해 주세요.</p>
@@ -749,9 +757,13 @@
         };
 
         const defaultUsersDB = {
-            "token_kim123": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "token_lee456": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "token_park789": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false }
+            "dapsa11": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa22": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa33": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa44": { id: "user_4", defaultName: "4조", team: "4조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa55": { id: "user_5", defaultName: "5조", team: "5조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa66": { id: "user_6", defaultName: "6조", team: "6조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
+            "dapsa77": { id: "user_7", defaultName: "7조", team: "7조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false }
         };
 
         let usersDB = {};
@@ -809,14 +821,8 @@
                         usersDB = JSON.parse(localData); 
                         Object.keys(usersDB).forEach(key => {
                             let u = usersDB[key];
-                            if (!u.failedAttempts) u.failedAttempts = {};
-                            if (!u.photoStatus) u.photoStatus = {};
-                            if (!u.photoData) u.photoData = {};
-                            if (!u.photoVerified) u.photoVerified = {};
-                            if (!u.bonusHistory) u.bonusHistory = {}; 
                             if (!u.solved) u.solved = [];
                             else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
-                            if (u.score === undefined) u.score = 0;
                         });
                     } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
                 } else {
@@ -969,7 +975,7 @@
                     triggerLoadingSequence();
                 }
             } else {
-                alert("등록되지 않은 카드입니다.\n(입력된 토큰: " + token + ")");
+                alert("등록되지 않은 코드입니다.\n(입력된 코드: " + token + ")");
                 logout();
             }
         }
@@ -1692,7 +1698,7 @@
 
             const optionsContainer = document.getElementById("modal-options"); optionsContainer.innerHTML = "";
             
-            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단 (잠금 유지)
+            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단
             optionsContainer.classList.add("pointer-events-none");
             setTimeout(() => {
                 optionsContainer.classList.remove("pointer-events-none");
@@ -1747,7 +1753,6 @@
             returnBtn.innerText = "↩ 미션 선택으로 돌아가기"; returnBtn.onclick = showChoiceSection; optionsContainer.appendChild(returnBtn);
         }
 
-        // 단일 선택 문제 제출 로직
         function handleAnswerSubmit(selected, btnElement) {
             if (isQuizProcessing) return; 
             isQuizProcessing = true; 
@@ -1768,14 +1773,14 @@
                 
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
 
-                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-200 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
+                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2";
+                btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
                 currentUser.score += earnedPoints; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync();
                 pendingQuizQueue.shift();
                 
-                setTimeout(() => { loadNextQuestionFromQueue(); }, 1500); 
+                setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
             } else {
                 failedCount++; 
                 if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
@@ -1785,7 +1790,7 @@
                 const originalHTML = btnElement.innerHTML;
                 const originalClass = btnElement.className;
 
-                btnElement.className = "w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect transition-all mb-2";
+                btnElement.className = "w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect transition-all mb-2";
                 btnElement.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                 
                 document.getElementById("modal-attempts-left").innerText = `기회: ${3 - failedCount}회`;
@@ -1817,7 +1822,7 @@
                         }
                         if (b.dataset.opt === currentActiveQuiz.answer) {
                             b.classList.remove("opacity-30");
-                            b.className = "w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                            b.className = "w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2";
                             b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${currentActiveQuiz.answer}</span>`;
                         }
                     });
@@ -1827,7 +1832,6 @@
             }
         }
 
-        // 다중 선택 문제 제출 로직
         function handleMultipleSubmit(submitBtn) {
             if (isQuizProcessing) return;
             if (currentSelectedMultiple.length === 0) return alert("정답을 1개 이상 선택해 주세요.");
@@ -1848,8 +1852,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
@@ -1858,14 +1862,14 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
-                submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2">+${earnedPoints}P</span>`;
+                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 transition-all";
+                submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
                 currentUser.score += earnedPoints; currentUser.solved.push(qId);
                 usersDB[currentToken] = currentUser; saveAndSync(); pendingQuizQueue.shift();
 
-                setTimeout(() => { loadNextQuestionFromQueue(); }, 1500); 
+                setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
             } else {
                 failedCount++; 
                 if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
@@ -1878,7 +1882,7 @@
                     const opt = b.dataset.opt;
                     if (currentSelectedMultiple.includes(opt)) {
                         originalStates.push({ el: b, html: b.innerHTML, cls: b.className });
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2 transition-all";
+                        b.className = "multiple-opt-btn w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2 transition-all";
                         b.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                     }
                 });
@@ -1897,7 +1901,7 @@
                     const originalSubmitClass = submitBtn.className;
                     const originalSubmitHTML = submitBtn.innerHTML;
                     submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                    submitBtn.className = "w-full bg-[var(--color-red)]/20 border-2 border-[var(--color-red)] text-[var(--color-red-lighter)] font-black py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 shake-effect transition-all";
+                    submitBtn.className = "w-full bg-[var(--color-red)]/20 border border-[var(--color-red)] text-[var(--color-red-lighter)] font-black py-3.5 px-4 rounded-xl text-xs mt-2 mb-2 shake-effect transition-all";
                     submitBtn.innerHTML = "❌ 오답입니다!";
 
                     setTimeout(() => { 
@@ -1925,7 +1929,7 @@
                         }
                         if (correctAnswers.includes(b.dataset.opt)) {
                             b.classList.remove("opacity-30");
-                            b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                            b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2";
                             b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${b.dataset.opt}</span>`;
                         }
                     });
@@ -1947,15 +1951,12 @@
                 else if (((currentUser.failedAttempts || {})[q.id] || 0) >= 3) { processedCount++; }
             });
             
-            // 모든 문제 처리가 완료되면
             if (processedCount === subQuizzes.length) {
-                // 이 코스의 결과 모달을 아직 안 띄운 경우에만 실행
                 if (!(currentUser.photoVerified || {})[currentBaseCourseId + "_report_done"]) {
                     if (!currentUser.photoVerified) currentUser.photoVerified = {};
                     currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true; 
                     usersDB[currentToken] = currentUser; saveAndSync();
                     
-                    // 마지막 2.4초 딜레이가 끝난 후 겹치지 않게 안전하게 띄움
                     setTimeout(() => { 
                         alert(`[역사 퀘스트 완료]\n모든 문제를 풀었습니다!\n총 ${subQuizzes.length}문제 중 [ ${correctCount}문제 ] 정답 통과!`); 
                     }, 800);
