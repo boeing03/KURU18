@@ -386,7 +386,7 @@
 
                 <!-- 탭 2: 점수 관리 -->
                 <div id="admin-tab-teams" class="admin-tab-content hidden p-3 space-y-2">
-                    <p class="text-[10px] font-bold text-[var(--color-gold)] font-serif-title uppercase px-1 mb-1">레크리에이션/패널티 점수 제어</p>
+                    <p class="text-[10px] font-bold text-[var(--color-gold)] font-serif-title uppercase px-1 mb-1">레크리에이션/패널티 점수 제어 (개별 조 초기화)</p>
                     <div id="admin-team-list" class="space-y-2"></div>
                 </div>
 
@@ -417,14 +417,14 @@
                         <p class="text-xs font-bold text-[var(--color-red-lighter)] mb-1">⚠️ 데이터 초기화 관리</p>
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="text-[11px] font-bold text-[var(--text-main)]">🔄 진행 상황만 초기화</p>
+                                <p class="text-[11px] font-bold text-[var(--text-main)]">🔄 진행 상황만 초기화 (전체)</p>
                                 <p class="text-[9px] text-[var(--text-sub)] mt-0.5">조 이름 유지, 점수와 진행률 및 인물 조우 내역 리셋</p>
                             </div>
                             <button onclick="openResetModal('progress')" class="bg-[var(--bg-btn-surface)] border border-[var(--color-red)]/50 text-[var(--color-red-light)] text-[10px] font-bold px-3 py-1.5 rounded-lg transition-finez hover:bg-[var(--color-red)]/20 shadow-sm">부분 초기화</button>
                         </div>
                         <div class="flex justify-between items-center pt-3 border-t border-[var(--border-dark)]/50">
                             <div>
-                                <p class="text-[11px] font-bold text-[var(--text-main)]">💥 전체 데이터 초기화</p>
+                                <p class="text-[11px] font-bold text-[var(--text-main)]">💥 전체 데이터 초기화 (전체)</p>
                                 <p class="text-[9px] text-[var(--text-sub)] mt-0.5">기기 설정(조 명단)을 포함한 모든 내역 삭제</p>
                             </div>
                             <button onclick="openResetModal('full')" class="bg-[var(--color-red)]/20 hover:bg-[var(--color-red)]/40 text-[var(--text-on-gold)] text-[10px] font-bold px-3 py-1.5 rounded-lg transition-finez shadow-sm">완전 초기화</button>
@@ -458,7 +458,7 @@
             </div>
         </div>
 
-        <!-- 관리자 전용 데이터 초기화 모달 -->
+        <!-- 관리 전용 데이터 초기화 모달 -->
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
@@ -1193,6 +1193,24 @@
             }
         }
 
+        // 개별 조 초기화 로직
+        function resetIndividualTeam(token) {
+            const teamName = usersDB[token].team;
+            if (confirm(`정말 [ ${teamName} ]의 진행 상황과 점수를 초기화하시겠습니까?\n(조 이름과 명단은 유지됩니다)`)) {
+                let u = usersDB[token];
+                u.score = 0; 
+                u.solved = []; 
+                u.failedAttempts = {}; 
+                u.photoStatus = {}; 
+                u.photoData = {}; 
+                u.photoVerified = {}; 
+                u.bonusHistory = {};
+                saveAndSync();
+                alert(`✅ [ ${teamName} ]의 데이터가 초기화되었습니다.`);
+                renderAdminDashboard();
+            }
+        }
+
         function switchTab(tab) {
             const qBtn = document.getElementById("nav-quiz-btn"), rBtn = document.getElementById("nav-rank-btn"), sBtn = document.getElementById("nav-schedule-btn");
             const qCon = document.getElementById("tab-quiz-content"), rCon = document.getElementById("tab-rank-content"), sCon = document.getElementById("tab-schedule-content");
@@ -1774,7 +1792,7 @@
                 
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
 
-                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2";
+                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -1791,7 +1809,7 @@
                 const originalHTML = btnElement.innerHTML;
                 const originalClass = btnElement.className;
 
-                btnElement.className = "w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect transition-all mb-2";
+                btnElement.className = "w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect transition-all mb-2";
                 btnElement.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                 
                 document.getElementById("modal-attempts-left").innerText = `기회: ${3 - failedCount}회`;
@@ -1823,7 +1841,7 @@
                         }
                         if (b.dataset.opt === currentActiveQuiz.answer) {
                             b.classList.remove("opacity-30");
-                            b.className = "w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2";
+                            b.className = "w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
                             b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${currentActiveQuiz.answer}</span>`;
                         }
                     });
@@ -1853,7 +1871,7 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2";
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
                         b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
@@ -1863,7 +1881,7 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all";
+                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -1930,7 +1948,7 @@
                         }
                         if (correctAnswers.includes(b.dataset.opt)) {
                             b.classList.remove("opacity-30");
-                            b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2";
+                            b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
                             b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${b.dataset.opt}</span>`;
                         }
                     });
@@ -2085,14 +2103,24 @@
 
                         let quizReceipts = "";
                         let solvedArr = Array.isArray(user.solved) ? user.solved : Object.values(user.solved || {});
+                        let courseQuizTotals = {}; 
+
                         solvedArr.forEach(qId => { 
                             const quiz = quizzesDB.find(q => q.id === qId); 
                             if(quiz) { 
-                                const course = coursesDB[quiz.course]; 
+                                const courseId = quiz.course;
                                 const fails = (user.failedAttempts || {})[qId] || 0;
                                 const earnedPts = fails === 0 ? quiz.points : Math.max(0, quiz.points - 5);
-                                quizReceipts += `<div class="flex justify-between text-[11px] text-[var(--text-muted)] py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'} (${quiz.step}단계)</span><span class="font-mono text-[var(--color-gold)] font-bold">+${earnedPts}P</span></div>`; 
+                                
+                                if (!courseQuizTotals[courseId]) courseQuizTotals[courseId] = 0;
+                                courseQuizTotals[courseId] += earnedPts;
                             } 
+                        });
+
+                        Object.keys(courseQuizTotals).forEach(courseId => {
+                            const course = coursesDB[courseId];
+                            const totalPts = courseQuizTotals[courseId];
+                            quizReceipts += `<div class="flex justify-between text-[11px] text-[var(--text-muted)] py-0.5"><span>📜 퀴즈: ${course ? course.name : '답사지'}</span><span class="font-mono text-[var(--color-gold)] font-bold">+${totalPts}P</span></div>`;
                         });
 
                         let bonusReceipts = "";
@@ -2178,7 +2206,10 @@
                         <div class="text-[9px] text-[var(--text-sub)] truncate mt-0.5">${user.members}</div>
                     </div>
                     <div class="font-mono font-black text-[var(--color-gold)] w-14 text-right mr-3 text-xs">${user.score}P</div>
-                    <button onclick="openScoreModal('${token}')" class="bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] px-3 py-1.5 rounded-lg font-bold shadow-md hover:brightness-110 active:scale-95 transition-finez text-[10px]">점수 조정</button>
+                    <div class="flex space-x-1">
+                        <button onclick="openScoreModal('${token}')" class="bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] px-2 py-1.5 rounded-lg font-bold shadow-md hover:brightness-110 active:scale-95 transition-finez text-[10px] whitespace-nowrap">점수</button>
+                        <button onclick="resetIndividualTeam('${token}')" class="bg-[var(--color-red)]/10 border border-[var(--color-red)]/40 text-[var(--color-red-light)] px-2 py-1.5 rounded-lg font-bold shadow-md hover:bg-[var(--color-red)]/20 active:scale-95 transition-finez text-[10px] whitespace-nowrap">리셋</button>
+                    </div>
                 `;
                 teamListContainer.appendChild(row);
             });
