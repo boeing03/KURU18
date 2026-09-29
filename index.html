@@ -44,8 +44,8 @@
             --text-inactive: #556e71;
             --text-on-gold: #020617;
             
-            --mist-gold: rgba(216, 177, 104, 0.12);
-            --mist-teal: rgba(14, 62, 69, 0.45);
+            --mist-gold: rgba(158, 106, 37, 0.1);
+            --mist-teal: rgba(0, 0, 0, 0.03); 
         }
 
         body.light-mode {
@@ -458,11 +458,11 @@
             </div>
         </div>
 
-        <!-- 관리 전용 데이터 초기화 모달 -->
+        <!-- 관리자 전용 데이터 초기화 모달 -->
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
-                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️</div>
+                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️️</div>
                     <div>
                         <h3 id="reset-modal-title" class="font-bold text-[var(--text-main)] text-base font-serif-title">데이터 초기화</h3>
                         <p id="reset-modal-desc" class="text-[11px] text-[var(--text-sub)] mt-2 leading-relaxed">초기화 내용이 여기에 표시됩니다.</p>
@@ -1049,11 +1049,10 @@
         }
 
         function processGoblinTag(code) {
-            hideAllScreens(); 
-            document.getElementById("goblin-result-screen").classList.remove("hidden");
-            
             const activeToken = safeGetItem("active_user_token");
             if (!activeToken || !usersDB[activeToken]) {
+                hideAllScreens(); 
+                document.getElementById("goblin-result-screen").classList.remove("hidden");
                 document.getElementById("goblin-title").innerText = "조 등록 필요";
                 document.getElementById("goblin-desc").innerText = "먼저 우리 조 카드를 태그하여 로그인해 주세요!";
                 document.getElementById("goblin-score").innerText = "❌"; 
@@ -1065,14 +1064,27 @@
             if (!currentUser.photoVerified) currentUser.photoVerified = {};
 
             const lastTime = currentUser.photoVerified["goblin_" + code + "_time"];
-            if (lastTime && Date.now() - lastTime < 30000) {
-                document.getElementById("goblin-result-icon").innerText = "⏳";
-                document.getElementById("goblin-title").innerText = "잠시 후 다시 태그하세요!";
-                document.getElementById("goblin-desc").innerText = `너무 빨리 만났습니다. 30초 뒤에 다시 카드를 대주세요.`;
-                document.getElementById("goblin-score").innerText = "0"; 
-                document.getElementById("goblin-score").className = "text-6xl font-black text-[var(--text-disabled)] tracking-tighter drop-shadow-md";
-                return;
+            if (lastTime) {
+                const timeDiff = Date.now() - lastTime;
+                // 🚨 핵심 수정: NFC 다중 인식(중복 태그) 방어 🚨
+                // 스마트폰을 대고 있을 때 0.1초 단위로 여러 번 태그되는 현상 차단. 
+                // 2초 이내의 연속 태그는 아예 무시해서 기껏 띄운 '성공/실패' 화면이 쿨타임 화면으로 덮어씌워지는 것을 막음!
+                if (timeDiff < 2000) return;
+
+                if (timeDiff < 30000) {
+                    hideAllScreens(); 
+                    document.getElementById("goblin-result-screen").classList.remove("hidden");
+                    document.getElementById("goblin-result-icon").innerText = "⏳";
+                    document.getElementById("goblin-title").innerText = "잠시 후 다시 태그하세요!";
+                    document.getElementById("goblin-desc").innerText = `너무 빨리 만났습니다. 30초 뒤에 다시 카드를 대주세요.`;
+                    document.getElementById("goblin-score").innerText = "0"; 
+                    document.getElementById("goblin-score").className = "text-6xl font-black text-[var(--text-disabled)] tracking-tighter drop-shadow-md";
+                    return;
+                }
             }
+
+            hideAllScreens(); 
+            document.getElementById("goblin-result-screen").classList.remove("hidden");
 
             let pts = 0; let title = ""; let colorClass = ""; let icon = "🎭";
             
@@ -1717,7 +1729,6 @@
 
             const optionsContainer = document.getElementById("modal-options"); optionsContainer.innerHTML = "";
             
-            // 더블클릭 오작동 방지를 위해 0.6초간 버튼 클릭을 원천 차단 (잠금 유지)
             optionsContainer.classList.add("pointer-events-none");
             setTimeout(() => {
                 optionsContainer.classList.remove("pointer-events-none");
@@ -1871,8 +1882,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
@@ -1881,7 +1892,7 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -1901,7 +1912,7 @@
                     const opt = b.dataset.opt;
                     if (currentSelectedMultiple.includes(opt)) {
                         originalStates.push({ el: b, html: b.innerHTML, cls: b.className });
-                        b.className = "multiple-opt-btn w-full text-left p-4 border border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2 transition-all";
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-[var(--color-red)] bg-[var(--color-red)]/20 rounded-xl text-xs font-bold text-[var(--color-red-lighter)] flex justify-between items-center shake-effect mb-2 transition-all";
                         b.innerHTML = `<span class="flex-1 font-black">❌ 오답입니다!</span>`;
                     }
                 });
@@ -1948,7 +1959,7 @@
                         }
                         if (correctAnswers.includes(b.dataset.opt)) {
                             b.classList.remove("opacity-30");
-                            b.className = "multiple-opt-btn w-full text-left p-4 border border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                            b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-[var(--color-gold)]/10 rounded-xl text-xs font-bold text-[var(--color-gold-light)] flex justify-between items-center transition-all z-10 relative mb-2 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
                             b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black text-emerald-400">💡 정답: ${b.dataset.opt}</span>`;
                         }
                     });
@@ -2103,8 +2114,8 @@
 
                         let quizReceipts = "";
                         let solvedArr = Array.isArray(user.solved) ? user.solved : Object.values(user.solved || {});
+                        
                         let courseQuizTotals = {}; 
-
                         solvedArr.forEach(qId => { 
                             const quiz = quizzesDB.find(q => q.id === qId); 
                             if(quiz) { 
