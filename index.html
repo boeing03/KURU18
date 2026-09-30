@@ -677,7 +677,7 @@
             { id: "q_04_1", course: "course_04", step: 1, question: "『이충무공전서』 서간첩에서 이순신이 \"호남은 국가의 보장이니, 이곳이 없으면 곧 국가가 없는 것이다\"라며 호남 수군의 전략적 가치를 강조한 한자 구절은?", options: ["필사즉생 필생즉사 (必死則生 必生則死)", "약무호남 시무국가 (若無湖南 是無國家)", "상유십이 미신불사 (尙有十二 微臣不死)", "일체단심 보국안민 (一體丹心 輔國安民)"], answer: "약무호남 시무국가 (若無湖南 是無國家)", points: 10, hint: "기념관 제3전시실 입구 벽면에 새겨진 표어입니다." },
             { id: "q_04_2", course: "course_04", step: 2, question: "1950년 7월 호남 전선이 비었을 때, 북한군 최정예 제6사단(방호산 부대)이 전주·광주·순천을 거쳐 기습 타격하려 했던 낙동강 방어선의 서남단 배후 요충지는?", options: ["대구 - 영천 축선", "왜관 - 칠곡 축선", "안동 - 포항 축선", "진주 - 마산 축선"], answer: "진주 - 마산 축선", points: 10, hint: "호남을 돌아 부산의 턱밑인 경남 서남부를 찌르려던 기동 작전입니다." },
             { id: "q_04_3", course: "course_04", step: 3, question: "1950년 7월 순천·여수·광양의 중학생 180여 명이 혈서 지원 후 하동 화개전투에 참전할 때 배속된 국군 제15연대의 독자적 중대 단위 명칭은?", options: ["학도 독립 제5중대", "청년 결사 제1중대", "소년 유격 수색대", "화개 방어 특공대"], answer: "학도 독립 제5중대", points: 15, hint: "15연대의 기존 1~4중대에 이어 편성된 '중대'였습니다." },
-            { id: "q_04_4", course: "course_04", step: 4, question: "6·25전쟁 당시 미군은 삐라의 주제와 메시지에 따라 고유한 작전명을 부여했습니다. 적군 포로에 대한 신변 안전 보장과 인도적 환대를 강조하며 투항을 유도했던 심리전 작전명이 아닌것은 무엇일까요?", options: ["불도저", "아이고", "깃발", "구사일생"], answer: "아이고", points: 20, hint: "기획전시실을 집중적으로 살펴보세요!!" },
+            { id: "q_04_4", course: "course_04", step: 4, question: "6·25전쟁 당시 미군은 삐라의 주제와 메시지에 따라 고유한 작전명을 부여했습니다. 적군 포로에 대한 신변 안전 보장과 인도적 환대를 강조하며 투항 유도했던 심리전 작전명이 아닌것은 무엇일까요?", options: ["불도저", "아이고", "깃발", "구사일생"], answer: "아이고", points: 20, hint: "기획전시실을 집중적으로 살펴보세요!!" },
             { id: "q_04_5", course: "course_04", step: 5, question: "6·25전쟁 당시 남과 북은 전황 변화(1~4단계)에 따라 고유한 심리전을 펼쳤습니다. 다음 중 심리전을 전개한 주체와 그 전략적 활동이 올바르게 짝지어진 것은 무엇일까요?", options: ["북한 - 중공군 참전과 연계한 피리심리전", "남한 - 적 전선 교란을 위한 한·미 갈등 증폭", "북한 - 6·25전쟁을 소련·중공의 대리전으로 부각", "남한 - 전세 역전을 위한 남로당 게릴라 투쟁 강화"], answer: "북한 - 중공군 참전과 연계한 피리심리전", points: 25, hint: "후방 게릴라 독려, 동맹국 간 이간책, 참전국의 성격 규정을 어느 진영이 자신의 승리와 정당성을 위해 활용했을지 논리적으로 따져보세요." },
 
             // --- [제5코스: 송광사] ---
@@ -919,7 +919,6 @@
             }
         }
 
-        // 🚨 데이터 증발을 막는 안전한 저장 함수 (덮어쓰기 방어)
         function saveAndSync(specificToken) { 
             const targetToken = specificToken || currentToken;
             if(db && targetToken && usersDB[targetToken]) {
@@ -1110,7 +1109,7 @@
             currentUser.photoVerified["goblin_" + code + "_time"] = Date.now();
             
             usersDB[currentToken] = currentUser; 
-            saveAndSync(); 
+            saveAndSync(currentToken); 
 
             document.getElementById("goblin-result-icon").innerText = icon;
             document.getElementById("goblin-title").innerText = title;
@@ -1138,7 +1137,7 @@
             const teamInput = document.getElementById("setup-team-input").value.trim();
             if (!teamInput) return alert("우리 조 이름을 입력해 주세요!"); 
             currentUser.team = teamInput; currentUser.members = document.getElementById("setup-members-input").value.trim() || "등록된 조원 없음";
-            currentUser.isConfigured = true; usersDB[currentToken] = currentUser; saveAndSync(); triggerLoadingSequence();
+            currentUser.isConfigured = true; usersDB[currentToken] = currentUser; saveAndSync(currentToken); triggerLoadingSequence();
         }
         function updateHeaderUI() {
             if(!currentUser) return;
@@ -1184,7 +1183,6 @@
             safeSetItem('local_usersDB', JSON.stringify(usersDB));
 
             if (db) {
-                // 전체 삭제가 필요한 경우엔 db.ref('usersDB').set() 허용
                 Promise.all([
                     db.ref('usersDB').set(usersDB),
                     db.ref('gps_verified_quizzes').set({}),
@@ -1803,7 +1801,7 @@
                 
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
 
-                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -1882,8 +1880,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
@@ -1892,7 +1890,7 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
@@ -2195,7 +2193,7 @@
             if (!usersDB[activeScoreToken].bonusHistory) usersDB[activeScoreToken].bonusHistory = {};
             usersDB[activeScoreToken].bonusHistory[timestamp] = { points: finalAmount, reason: reason };
             
-            saveAndSync(activeScoreToken); closeScoreModal();
+            saveAndSync(activeScoreToken); closeScoreModal(); renderAdminDashboard();
         }
 
         let activeAdminProgressToken = null;
@@ -2336,12 +2334,12 @@
             document.getElementById("admin-photo-approve-btn").onclick = function() { 
                 if (!usersDB[token].photoStatus) usersDB[token].photoStatus = {};
                 usersDB[token].photoStatus[courseId] = 'approved'; 
-                saveAndSync(token); closeAdminPhoto(); 
+                saveAndSync(token); closeAdminPhoto(); renderAdminDashboard();
             };
             document.getElementById("admin-photo-reject-btn").onclick = function() { 
                 if (usersDB[token].photoStatus) usersDB[token].photoStatus[courseId] = null; 
                 if (usersDB[token].photoData) usersDB[token].photoData[courseId] = null; 
-                saveAndSync(token); closeAdminPhoto(); 
+                saveAndSync(token); closeAdminPhoto(); renderAdminDashboard();
             };
         }
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
