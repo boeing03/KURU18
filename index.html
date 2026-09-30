@@ -462,7 +462,7 @@
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
-                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️</div>
+                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️️</div>
                     <div>
                         <h3 id="reset-modal-title" class="font-bold text-[var(--text-main)] text-base font-serif-title">데이터 초기화</h3>
                         <p id="reset-modal-desc" class="text-[11px] text-[var(--text-sub)] mt-2 leading-relaxed">초기화 내용이 여기에 표시됩니다.</p>
@@ -677,7 +677,7 @@
             { id: "q_04_1", course: "course_04", step: 1, question: "『이충무공전서』 서간첩에서 이순신이 \"호남은 국가의 보장이니, 이곳이 없으면 곧 국가가 없는 것이다\"라며 호남 수군의 전략적 가치를 강조한 한자 구절은?", options: ["필사즉생 필생즉사 (必死則生 必生則死)", "약무호남 시무국가 (若無湖南 是無國家)", "상유십이 미신불사 (尙有十二 微臣不死)", "일체단심 보국안민 (一體丹心 輔國安民)"], answer: "약무호남 시무국가 (若無湖南 是無國家)", points: 10, hint: "기념관 제3전시실 입구 벽면에 새겨진 표어입니다." },
             { id: "q_04_2", course: "course_04", step: 2, question: "1950년 7월 호남 전선이 비었을 때, 북한군 최정예 제6사단(방호산 부대)이 전주·광주·순천을 거쳐 기습 타격하려 했던 낙동강 방어선의 서남단 배후 요충지는?", options: ["대구 - 영천 축선", "왜관 - 칠곡 축선", "안동 - 포항 축선", "진주 - 마산 축선"], answer: "진주 - 마산 축선", points: 10, hint: "호남을 돌아 부산의 턱밑인 경남 서남부를 찌르려던 기동 작전입니다." },
             { id: "q_04_3", course: "course_04", step: 3, question: "1950년 7월 순천·여수·광양의 중학생 180여 명이 혈서 지원 후 하동 화개전투에 참전할 때 배속된 국군 제15연대의 독자적 중대 단위 명칭은?", options: ["학도 독립 제5중대", "청년 결사 제1중대", "소년 유격 수색대", "화개 방어 특공대"], answer: "학도 독립 제5중대", points: 15, hint: "15연대의 기존 1~4중대에 이어 편성된 '중대'였습니다." },
-            { id: "q_04_4", course: "course_04", step: 4, question: "6·25전쟁 당시 미군은 삐라의 주제와 메시지에 따라 고유한 작전명을 부여했습니다. 적군 포로에 대한 신변 안전 보장과 인도적 환대를 강조하며 투항 유도했던 심리전 작전명이 아닌것은 무엇일까요?", options: ["불도저", "아이고", "깃발", "구사일생"], answer: "아이고", points: 20, hint: "기획전시실을 집중적으로 살펴보세요!!" },
+            { id: "q_04_4", course: "course_04", step: 4, question: "6·25전쟁 당시 미군은 삐라의 주제와 메시지에 따라 고유한 작전명을 부여했습니다. 적군 포로에 대한 신변 안전 보장과 인도적 환대를 강조하며 투항을 유도했던 심리전 작전명이 아닌것은 무엇일까요?", options: ["불도저", "아이고", "깃발", "구사일생"], answer: "아이고", points: 20, hint: "기획전시실을 집중적으로 살펴보세요!!" },
             { id: "q_04_5", course: "course_04", step: 5, question: "6·25전쟁 당시 남과 북은 전황 변화(1~4단계)에 따라 고유한 심리전을 펼쳤습니다. 다음 중 심리전을 전개한 주체와 그 전략적 활동이 올바르게 짝지어진 것은 무엇일까요?", options: ["북한 - 중공군 참전과 연계한 피리심리전", "남한 - 적 전선 교란을 위한 한·미 갈등 증폭", "북한 - 6·25전쟁을 소련·중공의 대리전으로 부각", "남한 - 전세 역전을 위한 남로당 게릴라 투쟁 강화"], answer: "북한 - 중공군 참전과 연계한 피리심리전", points: 25, hint: "후방 게릴라 독려, 동맹국 간 이간책, 참전국의 성격 규정을 어느 진영이 자신의 승리와 정당성을 위해 활용했을지 논리적으로 따져보세요." },
 
             // --- [제5코스: 송광사] ---
@@ -757,18 +757,18 @@
         };
 
         const defaultUsersDB = {
-            "dapsa11": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa22": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa33": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa44": { id: "user_4", defaultName: "4조", team: "4조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa55": { id: "user_5", defaultName: "5조", team: "5조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa66": { id: "user_6", defaultName: "6조", team: "6조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false },
-            "dapsa77": { id: "user_7", defaultName: "7조", team: "7조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, isConfigured: false }
+            "dapsa11": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa22": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa33": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa44": { id: "user_4", defaultName: "4조", team: "4조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa55": { id: "user_5", defaultName: "5조", team: "5조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa66": { id: "user_6", defaultName: "6조", team: "6조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa77": { id: "user_7", defaultName: "7조", team: "7조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false }
         };
 
         let usersDB = {};
         let isAdmin = false; let currentUser = null; let currentToken = "";
-        let currentBaseCourseId = null; let currentActiveQuiz = null; let locationVerifiedQuizzes = {}; 
+        let currentBaseCourseId = null; let currentActiveQuiz = null; 
         let timerInterval = null; let rouletteInterval = null; let finalRolledReward = null; 
         
         let verifyMap = null; let mapTargetMarker = null; let mapUserMarker = null; let mapTargetCircle = null;
@@ -824,17 +824,11 @@
                             let u = usersDB[key];
                             if (!u.solved) u.solved = [];
                             else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
+                            if (!u.gpsVerified) u.gpsVerified = {}; 
                         });
                     } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
                 } else {
                     usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
-                }
-                
-                let localGps = safeGetItem('local_gps_verified');
-                if (localGps) {
-                    try { locationVerifiedQuizzes = JSON.parse(localGps); } catch(e) { locationVerifiedQuizzes = {}; }
-                } else {
-                    locationVerifiedQuizzes = {};
                 }
 
                 isDbLoaded = true;
@@ -862,6 +856,7 @@
                             if (!u.photoData) u.photoData = {};
                             if (!u.photoVerified) u.photoVerified = {};
                             if (!u.bonusHistory) u.bonusHistory = {}; 
+                            if (!u.gpsVerified) u.gpsVerified = {}; 
                             
                             if (!u.solved) u.solved = [];
                             else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
@@ -888,12 +883,6 @@
                 }, (error) => {
                     clearTimeout(dbTimeout);
                     triggerFallback();
-                });
-
-                db.ref('gps_verified_quizzes').on('value', (snapshot) => {
-                    if (fallbackTriggered) return;
-                    if (snapshot.exists()) locationVerifiedQuizzes = snapshot.val();
-                    else locationVerifiedQuizzes = {};
                 });
 
                 db.ref('global_mock_location').on('value', (snapshot) => {
@@ -934,7 +923,8 @@
 
         function checkGpsSessionValid(courseId) {
             if (safeGetItem("global_mock_location") === "true") return true; 
-            const timestamp = locationVerifiedQuizzes[courseId];
+            if (!currentUser || !currentUser.gpsVerified) return false;
+            const timestamp = currentUser.gpsVerified[courseId];
             if (!timestamp || isNaN(timestamp)) return false; 
             return (Date.now() - Number(timestamp)) < 2100000; 
         }
@@ -1174,18 +1164,17 @@
                     u.photoData = {}; 
                     u.photoVerified = {}; 
                     u.bonusHistory = {};
+                    u.gpsVerified = {}; 
                 });
             } else {
                 usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
             }
             
-            safeRemoveItem('local_gps_verified');
             safeSetItem('local_usersDB', JSON.stringify(usersDB));
 
             if (db) {
                 Promise.all([
                     db.ref('usersDB').set(usersDB),
-                    db.ref('gps_verified_quizzes').set({}),
                     db.ref('global_mock_location').set(false),
                     db.ref('global_nagan_locked').set(false)
                 ]).then(() => {
@@ -1215,6 +1204,7 @@
                 u.photoData = {}; 
                 u.photoVerified = {}; 
                 u.bonusHistory = {};
+                u.gpsVerified = {}; 
                 saveAndSync(token);
                 alert(`✅ [ ${teamName} ]의 데이터가 초기화되었습니다.`);
                 renderAdminDashboard();
@@ -1601,9 +1591,12 @@
         function finalizeLocationVerify() {
             const isMocked = safeGetItem("global_mock_location") === "true"; const targetRadius = coursesDB[currentBaseCourseId].radius || 100;
             if (isMocked || currentCalculatedDistance <= targetRadius) {
-                locationVerifiedQuizzes[currentBaseCourseId] = Date.now(); 
-                if(db) db.ref('gps_verified_quizzes').set(locationVerifiedQuizzes);
-                safeSetItem('local_gps_verified', JSON.stringify(locationVerifiedQuizzes));
+                // 개별 조 데이터에 GPS 인증 기록 저장
+                if (!currentUser.gpsVerified) currentUser.gpsVerified = {};
+                currentUser.gpsVerified[currentBaseCourseId] = Date.now(); 
+                usersDB[currentToken] = currentUser;
+                saveAndSync(currentToken);
+                
                 showChoiceSection(); startGpsTimerUpdate(currentBaseCourseId); renderQuizList();
             } else alert(`❌ 인증 불가!\n\n현재 목표 구역 반경 ${targetRadius}m를 벗어나 있습니다.\n(현재 거리: ${currentCalculatedDistance}m)\n\n원 안으로 이동 후 다시 인증해 주세요.`);
         }
@@ -1648,7 +1641,11 @@
             const timerText = document.getElementById("modal-gps-timer");
             function updateText() {
                 if(safeGetItem("global_mock_location") === "true") { timerText.innerText = "🚩 시뮬레이터 적용 상태 (시간 무제한)"; return; }
-                const startStamp = locationVerifiedQuizzes[courseId]; if(!startStamp) return;
+                if(!currentUser || !currentUser.gpsVerified) return;
+                
+                const startStamp = currentUser.gpsVerified[courseId]; 
+                if(!startStamp) return;
+                
                 const remaining = 2100000 - (Date.now() - startStamp); 
                 if (remaining <= 0) {
                     clearInterval(timerInterval); alert("⏳ 인증 유효 시간(35분)이 만료되었습니다."); closeModal(); renderQuizList();
@@ -1880,8 +1877,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
