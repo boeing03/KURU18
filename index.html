@@ -44,8 +44,8 @@
             --text-inactive: #556e71;
             --text-on-gold: #020617;
             
-            --mist-gold: rgba(158, 106, 37, 0.1);
-            --mist-teal: rgba(0, 0, 0, 0.03); 
+            --mist-gold: rgba(216, 177, 104, 0.12);
+            --mist-teal: rgba(14, 62, 69, 0.45);
         }
 
         body.light-mode {
@@ -462,7 +462,7 @@
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
-                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️️</div>
+                    <div class="w-14 h-14 bg-[var(--color-red)]/20 text-[var(--color-red)] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">⚠️</div>
                     <div>
                         <h3 id="reset-modal-title" class="font-bold text-[var(--text-main)] text-base font-serif-title">데이터 초기화</h3>
                         <p id="reset-modal-desc" class="text-[11px] text-[var(--text-sub)] mt-2 leading-relaxed">초기화 내용이 여기에 표시됩니다.</p>
@@ -919,12 +919,15 @@
             }
         }
 
-        function saveAndSync() { 
-            if(db) {
-                try { db.ref('usersDB').set(usersDB); } catch(e){}
-            } else {
-                safeSetItem('local_usersDB', JSON.stringify(usersDB));
+        // 🚨 데이터 증발을 막는 안전한 저장 함수 (덮어쓰기 방어)
+        function saveAndSync(specificToken) { 
+            const targetToken = specificToken || currentToken;
+            if(db && targetToken && usersDB[targetToken]) {
+                try { 
+                    db.ref('usersDB/' + targetToken).set(usersDB[targetToken]); 
+                } catch(e){}
             }
+            safeSetItem('local_usersDB', JSON.stringify(usersDB));
         }
         
         function syncLocationSimulatorState(checked) { if(db) { try{ db.ref('global_mock_location').set(checked); } catch(e){} } }
@@ -1066,9 +1069,6 @@
             const lastTime = currentUser.photoVerified["goblin_" + code + "_time"];
             if (lastTime) {
                 const timeDiff = Date.now() - lastTime;
-                // 🚨 핵심 수정: NFC 다중 인식(중복 태그) 방어 🚨
-                // 스마트폰을 대고 있을 때 0.1초 단위로 여러 번 태그되는 현상 차단. 
-                // 2초 이내의 연속 태그는 아예 무시해서 기껏 띄운 '성공/실패' 화면이 쿨타임 화면으로 덮어씌워지는 것을 막음!
                 if (timeDiff < 2000) return;
 
                 if (timeDiff < 30000) {
@@ -1184,6 +1184,7 @@
             safeSetItem('local_usersDB', JSON.stringify(usersDB));
 
             if (db) {
+                // 전체 삭제가 필요한 경우엔 db.ref('usersDB').set() 허용
                 Promise.all([
                     db.ref('usersDB').set(usersDB),
                     db.ref('gps_verified_quizzes').set({}),
@@ -1205,7 +1206,6 @@
             }
         }
 
-        // 개별 조 초기화 로직
         function resetIndividualTeam(token) {
             const teamName = usersDB[token].team;
             if (confirm(`정말 [ ${teamName} ]의 진행 상황과 점수를 초기화하시겠습니까?\n(조 이름과 명단은 유지됩니다)`)) {
@@ -1217,7 +1217,7 @@
                 u.photoData = {}; 
                 u.photoVerified = {}; 
                 u.bonusHistory = {};
-                saveAndSync();
+                saveAndSync(token);
                 alert(`✅ [ ${teamName} ]의 데이터가 초기화되었습니다.`);
                 renderAdminDashboard();
             }
@@ -1803,11 +1803,11 @@
                 
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
 
-                btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                btnElement.className = "w-full text-left p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
-                currentUser.score += earnedPoints; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync();
+                currentUser.score += earnedPoints; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync(currentToken);
                 pendingQuizQueue.shift();
                 
                 setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
@@ -1815,7 +1815,7 @@
                 failedCount++; 
                 if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
                 currentUser.failedAttempts[qId] = failedCount; 
-                usersDB[currentToken] = currentUser; saveAndSync();
+                usersDB[currentToken] = currentUser; saveAndSync(currentToken);
                 
                 const originalHTML = btnElement.innerHTML;
                 const originalClass = btnElement.className;
@@ -1882,8 +1882,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
@@ -1892,19 +1892,19 @@
                 const earnedPoints = failedCount === 0 ? currentActiveQuiz.points : Math.max(0, currentActiveQuiz.points - 5);
                 
                 submitBtn.classList.remove("opacity-50", "bg-gradient-to-r", "from-[var(--color-gold-dark)]", "to-[var(--color-gold)]", "text-[var(--text-on-gold)]");
-                submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+                submitBtn.className = "w-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
                 if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
                 currentUser.score += earnedPoints; currentUser.solved.push(qId);
-                usersDB[currentToken] = currentUser; saveAndSync(); pendingQuizQueue.shift();
+                usersDB[currentToken] = currentUser; saveAndSync(currentToken); pendingQuizQueue.shift();
 
                 setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
             } else {
                 failedCount++; 
                 if (!currentUser.failedAttempts) currentUser.failedAttempts = {};
                 currentUser.failedAttempts[qId] = failedCount;
-                usersDB[currentToken] = currentUser; saveAndSync();
+                usersDB[currentToken] = currentUser; saveAndSync(currentToken);
 
                 const originalStates = [];
 
@@ -1985,7 +1985,7 @@
                 if (!(currentUser.photoVerified || {})[currentBaseCourseId + "_report_done"]) {
                     if (!currentUser.photoVerified) currentUser.photoVerified = {};
                     currentUser.photoVerified[currentBaseCourseId + "_report_done"] = true; 
-                    usersDB[currentToken] = currentUser; saveAndSync();
+                    usersDB[currentToken] = currentUser; saveAndSync(currentToken);
                     
                     setTimeout(() => { 
                         alert(`[역사 퀘스트 완료]\n모든 문제를 풀었습니다!\n총 ${subQuizzes.length}문제 중 [ ${correctCount}문제 ] 정답 통과!`); 
@@ -2025,7 +2025,7 @@
             if (!currentUser.photoStatus) currentUser.photoStatus = {};
             currentUser.photoStatus[currentBaseCourseId] = 'pending';
             
-            usersDB[currentToken] = currentUser; saveAndSync();
+            usersDB[currentToken] = currentUser; saveAndSync(currentToken);
             alert("인증 사진이 전송되었습니다. 스태프 승인이 완료되면 낙관을 찍을 수 있습니다."); closeModal();
         }
 
@@ -2069,7 +2069,7 @@
             currentUser.photoStatus[currentBaseCourseId] = 'claimed'; 
             
             currentUser.score += finalRolledReward.points;
-            usersDB[currentToken] = currentUser; saveAndSync(); closeModal();
+            usersDB[currentToken] = currentUser; saveAndSync(currentToken); closeModal();
         }
 
         function toggleLeaderboardAccordion(token) { activeAccordionToken = (activeAccordionToken === token) ? null : token; renderLeaderboard(); }
@@ -2195,7 +2195,7 @@
             if (!usersDB[activeScoreToken].bonusHistory) usersDB[activeScoreToken].bonusHistory = {};
             usersDB[activeScoreToken].bonusHistory[timestamp] = { points: finalAmount, reason: reason };
             
-            saveAndSync(); closeScoreModal();
+            saveAndSync(activeScoreToken); closeScoreModal();
         }
 
         let activeAdminProgressToken = null;
@@ -2336,12 +2336,12 @@
             document.getElementById("admin-photo-approve-btn").onclick = function() { 
                 if (!usersDB[token].photoStatus) usersDB[token].photoStatus = {};
                 usersDB[token].photoStatus[courseId] = 'approved'; 
-                saveAndSync(); closeAdminPhoto(); 
+                saveAndSync(token); closeAdminPhoto(); 
             };
             document.getElementById("admin-photo-reject-btn").onclick = function() { 
                 if (usersDB[token].photoStatus) usersDB[token].photoStatus[courseId] = null; 
                 if (usersDB[token].photoData) usersDB[token].photoData[courseId] = null; 
-                saveAndSync(); closeAdminPhoto(); 
+                saveAndSync(token); closeAdminPhoto(); 
             };
         }
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
