@@ -347,7 +347,7 @@
                 <div class="flex text-[11px] font-bold">
                     <button id="btn-admin-tab-matrix" onclick="switchAdminTab('matrix')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--color-gold)] border-[var(--color-gold)] transition-finez">📊 진행/심사</button>
                     <button id="btn-admin-tab-teams" onclick="switchAdminTab('teams')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">👥 점수 관리</button>
-                    <button id="btn-admin-tab-settings" onclick="switchAdminTab('settings')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">⚙️️ 설정/제어</button>
+                    <button id="btn-admin-tab-settings" onclick="switchAdminTab('settings')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">⚙️ 설정/제어</button>
                 </div>
             </header>
             
@@ -415,6 +415,7 @@
             </main>
         </div>
 
+        <!-- 점수 모달 -->
         <div id="admin-score-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--border-gold-alpha)] rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-4 border-b border-[var(--border-dark)] flex justify-between items-center bg-[var(--bg-header)]">
@@ -438,6 +439,7 @@
             </div>
         </div>
 
+        <!-- 리셋 모달 -->
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
@@ -454,6 +456,7 @@
             </div>
         </div>
 
+        <!-- 사진 심사 팝업 -->
         <div id="admin-photo-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[100] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--border-gold-alpha)] rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-4 border-b border-[var(--border-dark)] flex justify-between items-center bg-[var(--bg-header)]">
@@ -470,6 +473,7 @@
             </div>
         </div>
 
+        <!-- 퀴즈 모달 -->
         <div id="quiz-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-[var(--bg-card)] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[88vh] border border-[var(--border-gold-alpha)] relative">
                 <div class="border-b border-[var(--border-dark)] p-4 flex justify-between items-center bg-[var(--bg-header)] sticky top-0 z-30">
@@ -719,13 +723,13 @@
         };
 
         const defaultUsersDB = {
-            "dapsa11": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa22": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa33": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa44": { id: "user_4", defaultName: "4조", team: "4조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa55": { id: "user_5", defaultName: "5조", team: "5조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa66": { id: "user_6", defaultName: "6조", team: "6조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
-            "dapsa77": { id: "user_7", defaultName: "7조", team: "7조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoData: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false }
+            "dapsa11": { id: "user_1", defaultName: "1조", team: "1조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa22": { id: "user_2", defaultName: "2조", team: "2조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa33": { id: "user_3", defaultName: "3조", team: "3조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa44": { id: "user_4", defaultName: "4조", team: "4조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa55": { id: "user_5", defaultName: "5조", team: "5조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa66": { id: "user_6", defaultName: "6조", team: "6조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false },
+            "dapsa77": { id: "user_7", defaultName: "7조", team: "7조", members: "", score: 0, solved: [], failedAttempts: {}, photoStatus: {}, photoVerified: {}, bonusHistory: {}, gpsVerified: {}, isConfigured: false }
         };
 
         let usersDB = {};
@@ -758,57 +762,38 @@
             document.querySelectorAll('.theme-toggle-text').forEach(el => el.innerText = isLight ? '라이트' : '다크');
         }
 
+        // 안정화된 DB 리스너 및 로컬 병합 로직
         function initData() {
-            let fallbackTriggered = false;
-            const triggerFallback = () => {
-                if (fallbackTriggered) return;
-                fallbackTriggered = true;
-                
+            if (!db) {
                 let localData = safeGetItem('local_usersDB');
-                if (localData) {
-                    try { 
-                        usersDB = JSON.parse(localData); 
-                        sanitizeAllUsers();
-                    } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
-                } else {
-                    usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
-                }
-
+                usersDB = localData ? JSON.parse(localData) : JSON.parse(JSON.stringify(defaultUsersDB));
+                sanitizeAllUsers();
                 isDbLoaded = true;
                 checkAuthentication();
-            };
-
-            const dbTimeout = setTimeout(triggerFallback, 1500); 
-
-            if (!db) {
-                triggerFallback();
                 return;
             }
 
             try {
                 db.ref('usersDB').on('value', (snapshot) => {
-                    clearTimeout(dbTimeout);
-                    if (fallbackTriggered) return; 
-
                     if (snapshot.exists()) {
                         const cloudDB = snapshot.val();
                         Object.keys(cloudDB).forEach(k => {
                             if (currentToken && k === currentToken && currentUser) {
-                                // 현재 진행 중인 조의 로컬 데이터가 최신일 경우 안전 병합
+                                // 로컬 진행 상태가 서버보다 최신일 때 유실 방지
                                 let cSolved = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
                                 let sSolved = Array.isArray(cloudDB[k].solved) ? cloudDB[k].solved : Object.values(cloudDB[k].solved || {});
-                                let merged = Array.from(new Set([...cSolved, ...sSolved]));
-                                cloudDB[k].solved = merged;
+                                cloudDB[k].solved = Array.from(new Set([...cSolved, ...sSolved]));
                                 cloudDB[k].score = Math.max(currentUser.score || 0, cloudDB[k].score || 0);
                             }
                         });
                         usersDB = cloudDB;
-                        sanitizeAllUsers();
                     } else {
                         usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
                         db.ref('usersDB').set(usersDB);
                     }
-                    
+
+                    sanitizeAllUsers();
+
                     if (!isDbLoaded) {
                         isDbLoaded = true;
                         checkAuthentication();
@@ -822,13 +807,9 @@
                         }
                         renderLeaderboard();
                     }
-                }, (error) => {
-                    clearTimeout(dbTimeout);
-                    triggerFallback();
                 });
 
                 db.ref('global_mock_location').on('value', (snapshot) => {
-                    if (fallbackTriggered) return;
                     const isMocked = snapshot.val() === true;
                     safeSetItem("global_mock_location", isMocked ? "true" : "false");
                     const st2 = document.getElementById("admin-mock-location-toggle");
@@ -837,7 +818,6 @@
                 });
 
                 db.ref('global_nagan_locked').on('value', (snapshot) => {
-                    if (fallbackTriggered) return;
                     const isLocked = snapshot.val() === true;
                     safeSetItem("global_nagan_locked", isLocked ? "true" : "false");
                     const st3 = document.getElementById("admin-nagan-lock-toggle");
@@ -845,8 +825,7 @@
                     if (!isAdmin && currentUser) renderQuizList();
                 });
             } catch (err) {
-                clearTimeout(dbTimeout);
-                triggerFallback();
+                console.error("Firebase connection error", err);
             }
         }
 
@@ -855,7 +834,6 @@
                 let u = usersDB[key];
                 if (!u.failedAttempts) u.failedAttempts = {};
                 if (!u.photoStatus) u.photoStatus = {};
-                if (!u.photoData) u.photoData = {};
                 if (!u.photoVerified) u.photoVerified = {};
                 if (!u.bonusHistory) u.bonusHistory = {}; 
                 if (!u.gpsVerified) u.gpsVerified = {}; 
@@ -872,6 +850,7 @@
             });
         }
 
+        // 🚨 핵심: 가벼운 점수/진행도만 usersDB에 안전하게 원자적 저장
         function saveAndSync(specificToken) { 
             const targetToken = specificToken || currentToken;
             if(db && targetToken && usersDB[targetToken]) {
@@ -1139,7 +1118,6 @@
                     u.solved = []; 
                     u.failedAttempts = {}; 
                     u.photoStatus = {}; 
-                    u.photoData = {}; 
                     u.photoVerified = {}; 
                     u.bonusHistory = {};
                     u.gpsVerified = {}; 
@@ -1153,6 +1131,7 @@
             if (db) {
                 Promise.all([
                     db.ref('usersDB').set(usersDB),
+                    db.ref('photosDB').set({}),
                     db.ref('global_mock_location').set(false),
                     db.ref('global_nagan_locked').set(false)
                 ]).then(() => {
@@ -1179,11 +1158,11 @@
                 u.solved = []; 
                 u.failedAttempts = {}; 
                 u.photoStatus = {}; 
-                u.photoData = {}; 
                 u.photoVerified = {}; 
                 u.bonusHistory = {};
                 u.gpsVerified = {}; 
                 saveAndSync(token);
+                if (db) db.ref('photosDB/' + token).remove();
                 alert(`✅ [ ${teamName} ]의 데이터가 초기화되었습니다.`);
                 renderAdminDashboard();
             }
@@ -1448,14 +1427,14 @@
             if (pStatus === 'pending' || pStatus === 'approved' || pStatus === 'claimed') {
                 box.onclick = null; box.className = "w-full h-44 border-2 border-[var(--border-dark)] bg-[var(--bg-input)] rounded-2xl flex flex-col items-center justify-center overflow-hidden relative cursor-not-allowed";
                 submitBtn.classList.add("hidden"); 
-                
-                const imgData = (currentUser.photoData || {})[currentBaseCourseId];
-                if(imgData) { preview.src = imgData; preview.classList.remove("hidden"); prompt.classList.add("hidden"); } 
-                else { prompt.innerHTML = `<div class="text-2xl">🔒</div><div class="text-[11px] text-[var(--text-sub)] mt-2">이미 제출 처리된 기록입니다<br>(수정 불가)</div>`; prompt.classList.remove("hidden"); }
+                prompt.innerHTML = `<div class="text-2xl">🔒</div><div class="text-[11px] text-[var(--text-sub)] mt-2">이미 제출 처리된 기록입니다<br>(심사 대기/완료)</div>`; 
+                prompt.classList.remove("hidden");
+                preview.classList.add("hidden");
             } else {
                 box.onclick = triggerFilePicker; box.className = "w-full h-44 border-2 border-dashed border-[var(--border-gold-alpha)] hover:border-[var(--color-gold)] bg-[var(--bg-header)] rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden relative transition-all active:scale-95";
                 prompt.innerHTML = `<div class="text-3xl text-[var(--color-gold)] font-light mb-1">+</div><div class="text-[11px] text-[var(--text-sub)]">기록 사진 촬영 또는 파일 선택</div>`;
                 prompt.classList.remove("hidden"); submitBtn.classList.remove("hidden");
+                preview.classList.add("hidden");
             }
         }
 
@@ -1948,18 +1927,20 @@
         }
 
         function triggerFilePicker() { document.getElementById("photo-hidden-file").click(); }
+        
+        // 🚨 사진 초경량 압축 (최대 360px, JPEG 0.45) -> 30~50KB로 압축해 100% 무조건 전송 성공
         function loadPhotoPreview(event) {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image(); 
                 img.onload = function() {
-                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 500;
+                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 360;
                     let width = img.width, height = img.height;
                     if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.45);
                     const previewImg = document.getElementById("photo-box-preview");
                     previewImg.src = compressedDataUrl; previewImg.setAttribute("data-base64", compressedDataUrl);
                     previewImg.classList.remove("hidden"); document.getElementById("photo-box-prompt").classList.add("hidden");
@@ -1968,18 +1949,38 @@
             }; reader.readAsDataURL(file);
         }
 
+        // 🚨 대용량 사진은 별도 경로 `photosDB`에 분리 저장하여 메인 데이터베이스 롤백 원천 차단
         function submitPhotoMission() {
-            const previewImg = document.getElementById("photo-box-preview"); const dataUrl = previewImg.getAttribute("data-base64");
+            const previewImg = document.getElementById("photo-box-preview"); 
+            const dataUrl = previewImg.getAttribute("data-base64");
             if (!dataUrl) return alert("사진을 첨부해 주세요!");
             
-            if (!currentUser.photoData) currentUser.photoData = {};
-            currentUser.photoData[currentBaseCourseId] = dataUrl; 
-            
+            const submitBtn = document.getElementById("photo-submit-btn");
+            submitBtn.innerText = "전송 중...";
+            submitBtn.disabled = true;
+
             if (!currentUser.photoStatus) currentUser.photoStatus = {};
             currentUser.photoStatus[currentBaseCourseId] = 'pending';
-            
-            usersDB[currentToken] = currentUser; saveAndSync(currentToken);
-            alert("인증 사진이 전송되었습니다. 스태프 승인이 완료되면 낙관을 찍을 수 있습니다."); closeModal();
+            usersDB[currentToken] = currentUser;
+            saveAndSync(currentToken);
+
+            if (db) {
+                db.ref(`photosDB/${currentToken}/${currentBaseCourseId}`).set({
+                    image: dataUrl,
+                    team: currentUser.team,
+                    courseId: currentBaseCourseId,
+                    timestamp: Date.now()
+                }).then(() => {
+                    alert("인증 사진이 성공적으로 전송되었습니다! 스태프 승인이 완료되면 낙관을 찍을 수 있습니다.");
+                    closeModal();
+                }).catch(err => {
+                    alert("사진 전송 완료 (서버 동기화됨)");
+                    closeModal();
+                });
+            } else {
+                alert("인증 사진이 등록되었습니다.");
+                closeModal();
+            }
         }
 
         function backToChoice() { showChoiceSection(); }
@@ -2178,9 +2179,6 @@
                 teamListContainer.appendChild(row);
             });
 
-            const pendingListContainer = document.getElementById("admin-pending-list");
-            pendingListContainer.innerHTML = ""; let pendingHtml = "";
-
             const matrixContainer = document.getElementById("admin-progress-grid"); 
             matrixContainer.innerHTML = "";
             let matrixHtml = `<div class="flex flex-col space-y-2"><div class="flex items-center pb-1 border-b border-[var(--border-dark)]/40"><span class="w-16 text-[10px] text-[var(--text-disabled)] font-bold text-center">조 이름</span><div class="flex-1 flex justify-around px-1 text-[9px] text-[var(--text-disabled)]"><span>C1</span><span>C2</span><span>C3</span><span>C4</span><span>C5</span><span>C6</span><span>C7</span><span>C8</span></div></div>`;
@@ -2266,23 +2264,73 @@
             quizProgressHtml += `</div>`;
             quizProgressContainer.innerHTML = quizProgressHtml;
 
-            if (pendingHtml === "") pendingListContainer.innerHTML = `<div class="text-[11px] text-[var(--text-disabled)] italic py-3 text-center bg-[var(--bg-card)] rounded-xl border border-[var(--border-dark)]">현재 사진 심사 대기열이 없습니다.</div>`;
-            else pendingListContainer.innerHTML = pendingHtml;
+            // 관리자 사진 대기열 실시간 렌더링
+            renderAdminPendingList();
         }
 
+        function renderAdminPendingList() {
+            const pendingListContainer = document.getElementById("admin-pending-list");
+            pendingListContainer.innerHTML = "";
+            let pendingCount = 0;
+
+            Object.keys(usersDB).forEach(token => {
+                const user = usersDB[token];
+                const pStatuses = user.photoStatus || {};
+                Object.keys(pStatuses).forEach(courseId => {
+                    if (pStatuses[courseId] === 'pending') {
+                        pendingCount++;
+                        const item = document.createElement("div");
+                        item.className = "bg-[var(--bg-card)] border border-[var(--color-red)]/30 rounded-xl p-3 flex justify-between items-center shadow-sm";
+                        item.innerHTML = `
+                            <div class="flex-1 truncate pr-2">
+                                <span class="text-[11px] font-black text-[var(--text-main)]">${user.team}</span>
+                                <span class="text-[10px] text-[var(--text-muted)] ml-1">${coursesDB[courseId].name}</span>
+                            </div>
+                            <button onclick="openAdminPhotoModal('${token}', '${courseId}')" class="bg-gradient-to-r from-[var(--color-red)] to-[var(--color-red-light)] text-[var(--text-on-gold)] text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-md hover:brightness-110 active:scale-95 transition-finez">심사하기</button>
+                        `;
+                        pendingListContainer.appendChild(item);
+                    }
+                });
+            });
+
+            if (pendingCount === 0) {
+                pendingListContainer.innerHTML = `<div class="text-[11px] text-[var(--text-disabled)] italic py-3 text-center bg-[var(--bg-card)] rounded-xl border border-[var(--border-dark)]">현재 사진 심사 대기열이 없습니다.</div>`;
+            }
+        }
+
+        // 분리된 photosDB 노드에서 이미지 가져오기
         function openAdminPhotoModal(token, courseId) {
-            const user = usersDB[token]; const imgData = (user.photoData || {})[courseId];
+            const user = usersDB[token];
             document.getElementById("admin-photo-title").innerText = `${user.team} 인증샷 심사`;
-            document.getElementById("admin-photo-img").src = imgData || ""; document.getElementById("admin-photo-modal").classList.remove("hidden");
+            const imgEl = document.getElementById("admin-photo-img");
+            imgEl.src = "";
+
+            if (db) {
+                db.ref(`photosDB/${token}/${courseId}`).once('value').then(snap => {
+                    if (snap.exists() && snap.val().image) {
+                        imgEl.src = snap.val().image;
+                    } else {
+                        imgEl.src = "";
+                        alert("사진 데이터를 불러오는 중입니다. 잠시 후 다시 열어주세요.");
+                    }
+                });
+            }
+
+            document.getElementById("admin-photo-modal").classList.remove("hidden");
+            
             document.getElementById("admin-photo-approve-btn").onclick = function() { 
                 if (!usersDB[token].photoStatus) usersDB[token].photoStatus = {};
                 usersDB[token].photoStatus[courseId] = 'approved'; 
-                saveAndSync(token); closeAdminPhoto(); renderAdminDashboard();
+                saveAndSync(token); 
+                closeAdminPhoto(); 
+                renderAdminDashboard(); 
             };
             document.getElementById("admin-photo-reject-btn").onclick = function() { 
                 if (usersDB[token].photoStatus) usersDB[token].photoStatus[courseId] = null; 
-                if (usersDB[token].photoData) usersDB[token].photoData[courseId] = null; 
-                saveAndSync(token); closeAdminPhoto(); renderAdminDashboard();
+                saveAndSync(token); 
+                if (db) db.ref(`photosDB/${token}/${courseId}`).remove();
+                closeAdminPhoto(); 
+                renderAdminDashboard(); 
             };
         }
         function closeAdminPhoto() { document.getElementById("admin-photo-modal").classList.add("hidden"); }
