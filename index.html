@@ -347,7 +347,7 @@
                 <div class="flex text-[11px] font-bold">
                     <button id="btn-admin-tab-matrix" onclick="switchAdminTab('matrix')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--color-gold)] border-[var(--color-gold)] transition-finez">📊 진행/심사</button>
                     <button id="btn-admin-tab-teams" onclick="switchAdminTab('teams')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">👥 점수 관리</button>
-                    <button id="btn-admin-tab-settings" onclick="switchAdminTab('settings')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">⚙️ 설정/제어</button>
+                    <button id="btn-admin-tab-settings" onclick="switchAdminTab('settings')" class="admin-tab-btn flex-1 py-2.5 border-b-2 text-[var(--text-muted)] border-transparent transition-finez">⚙️️ 설정/제어</button>
                 </div>
             </header>
             
@@ -415,7 +415,6 @@
             </main>
         </div>
 
-        <!-- 점수 모달 -->
         <div id="admin-score-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--border-gold-alpha)] rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-4 border-b border-[var(--border-dark)] flex justify-between items-center bg-[var(--bg-header)]">
@@ -439,7 +438,6 @@
             </div>
         </div>
 
-        <!-- 리셋 모달 -->
         <div id="admin-reset-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--color-red)]/50 rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-6 text-center space-y-4">
@@ -456,7 +454,6 @@
             </div>
         </div>
 
-        <!-- 사진 심사 팝업 -->
         <div id="admin-photo-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-[100] flex items-center justify-center p-4">
             <div class="bg-[var(--bg-modal-card)] border border-[var(--border-gold-alpha)] rounded-2xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
                 <div class="p-4 border-b border-[var(--border-dark)] flex justify-between items-center bg-[var(--bg-header)]">
@@ -473,7 +470,6 @@
             </div>
         </div>
 
-        <!-- 퀴즈 모달 -->
         <div id="quiz-modal" class="hidden fixed inset-0 bg-[var(--bg-overlay)] backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-[var(--bg-card)] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[88vh] border border-[var(--border-gold-alpha)] relative">
                 <div class="border-b border-[var(--border-dark)] p-4 flex justify-between items-center bg-[var(--bg-header)] sticky top-0 z-30">
@@ -795,7 +791,18 @@
                     if (fallbackTriggered) return; 
 
                     if (snapshot.exists()) {
-                        usersDB = snapshot.val();
+                        const cloudDB = snapshot.val();
+                        Object.keys(cloudDB).forEach(k => {
+                            if (currentToken && k === currentToken && currentUser) {
+                                // 현재 진행 중인 조의 로컬 데이터가 최신일 경우 안전 병합
+                                let cSolved = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+                                let sSolved = Array.isArray(cloudDB[k].solved) ? cloudDB[k].solved : Object.values(cloudDB[k].solved || {});
+                                let merged = Array.from(new Set([...cSolved, ...sSolved]));
+                                cloudDB[k].solved = merged;
+                                cloudDB[k].score = Math.max(currentUser.score || 0, cloudDB[k].score || 0);
+                            }
+                        });
+                        usersDB = cloudDB;
                         sanitizeAllUsers();
                     } else {
                         usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
@@ -981,7 +988,7 @@
                             if (record.recordType === "url" || record.recordType === "text" || record.recordType === "uri") {
                                 let urlData = new TextDecoder(record.encoding || "utf-8").decode(record.data).replace(/\0/g, ''); 
                                 try {
-                                    let urlObj = new URL(urlData);
+                                    let urlObj = new URL(urlData); 
                                     let rawToken = urlObj.searchParams.get('token');
                                     let rawGoblin = urlObj.searchParams.get('goblin');
                                     let token = rawToken ? rawToken.trim() : null;
@@ -1316,7 +1323,6 @@
             container.innerHTML = html;
         }
 
-        // 🚨 퀴즈 목록 표시 판정 로직 전면 수정 (사진 유무 상관없이 완료 처리)
         function renderQuizList() {
             const container = document.getElementById("quiz-list"); 
             container.innerHTML = "";
@@ -1340,14 +1346,13 @@
                 const quizCompleted = ((solvedCount + lockedCount) === maxStep);
                 const pStatus = (currentUser.photoStatus || {})[courseId]; 
                 const isVerified = checkGpsSessionValid(courseId);
-                const isFullyDone = (quizCompleted && (pStatus === 'claimed' || !pStatus));
 
                 let statusBadge = `<span class="bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--text-sub)] text-[10px] px-2.5 py-1 rounded-full font-bold">위치 미인증</span>`;
                 let btnText = '위치 지도 인증 시작 →'; 
                 let btnClass = 'bg-[var(--bg-btn-surface)] text-[var(--color-gold)] hover:bg-[var(--bg-btn-hover)] border border-[var(--border-gold-alpha)]';
                 let btnAction = `openQuizModal('${courseId}')`;
 
-                if (isFullyDone && quizCompleted) {
+                if (quizCompleted) {
                     if (courseId === 'course_06' && !isNaganLocked) {
                         statusBadge = `<span class="bg-[var(--color-gold)]/20 text-[var(--color-gold-light)] border border-[var(--border-gold-alpha)] text-[10px] px-2.5 py-1 rounded-full font-bold">🎭 인물 조우 대기중</span>`;
                         btnText = '보부상/도적 이벤트 열기'; 
@@ -2245,23 +2250,11 @@
                     let cSolved = 0, cLocked = 0;
                     subQuizzes.forEach(q => { if(solvedArr.includes(q.id)) cSolved++; if(((user.failedAttempts || {})[q.id] || 0) >= 3) cLocked++; }); 
                     
-                    const pStatus = (user.photoStatus || {})[courseId];
-                    const isFullyDone = ((cSolved + cLocked) === maxStep && pStatus === 'claimed');
-
+                    const isQuizAllDone = ((cSolved + cLocked) === maxStep);
                     let dotClass = "dot-empty";
-                    if (isFullyDone) dotClass = "dot-done";
-                    else if (pStatus === 'pending') {
-                        dotClass = "dot-pending";
-                        pendingHtml += `
-                            <div class="bg-[var(--bg-card)] border border-[var(--color-red)]/30 rounded-xl p-3 flex justify-between items-center shadow-sm">
-                                <div class="flex-1 truncate pr-2">
-                                    <span class="text-[11px] font-black text-[var(--text-main)]">${user.team}</span>
-                                    <span class="text-[10px] text-[var(--text-muted)] ml-1">${coursesDB[courseId].name}</span>
-                                </div>
-                                <button onclick="openAdminPhotoModal('${token}', '${courseId}')" class="bg-gradient-to-r from-[var(--color-red)] to-[var(--color-red-light)] text-[var(--text-on-gold)] text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-md hover:brightness-110 active:scale-95 transition-finez">심사하기</button>
-                            </div>
-                        `;
-                    }
+                    if (isQuizAllDone) dotClass = "dot-done";
+                    else if (cSolved > 0) dotClass = "dot-pending";
+
                     dotsHtml += `<div class="flex-1 flex justify-center"><span class="progress-dot ${dotClass}"></span></div>`;
                 });
                 matrixHtml += `<div class="flex items-center"><span class="w-16 text-[11px] text-[var(--text-main)] font-serif-title font-bold truncate text-center">${user.team}</span><div class="flex-1 flex justify-around px-1">${dotsHtml}</div></div>`;
