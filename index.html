@@ -193,7 +193,6 @@
                     📢 NFC 답사 카드 인식 시작하기
                 </button>
 
-                <!-- 수동 로그인 입력창 (오타/대소문자/띄어쓰기 완벽 방어) -->
                 <div class="w-full flex space-x-2 mb-4">
                     <input type="text" id="manual-token-input" class="flex-1 bg-[var(--bg-input)] border border-[var(--border-gold-alpha)] focus:border-[var(--color-gold)] rounded-xl px-4 py-3 text-sm font-bold text-[var(--text-main)] outline-none placeholder-[var(--text-disabled)]" placeholder="부여받은 조별 코드 직접 입력">
                     <button onclick="handleInAppAuth(document.getElementById('manual-token-input').value)" class="bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] px-4 rounded-xl font-bold hover:bg-[var(--bg-btn-hover)] transition-finez whitespace-nowrap active:scale-95 shadow-sm">
@@ -395,7 +394,7 @@
                     </div>
 
                     <div class="bg-[var(--bg-card)] rounded-xl p-4 flex flex-col space-y-3 border border-[var(--color-red)]/30 mt-4 shadow-sm">
-                        <p class="text-xs font-bold text-[var(--color-red-lighter)] mb-1">⚠️️ 데이터 초기화 관리</p>
+                        <p class="text-xs font-bold text-[var(--color-red-lighter)] mb-1">⚠️ 데이터 초기화 관리</p>
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-[11px] font-bold text-[var(--text-main)]">🔄 진행 상황만 초기화 (전체)</p>
@@ -485,7 +484,6 @@
                 </div>
                 <div class="p-5 flex-1 overflow-y-auto space-y-4">
                     
-                    <!-- 지도 검증 섹션 -->
                     <div id="modal-map-section" class="hidden space-y-4">
                         <div class="text-center space-y-1">
                             <p class="text-sm font-bold font-serif-title text-[var(--text-main)]">현위치 반경 확인</p>
@@ -504,12 +502,11 @@
                         <button onclick="closeModal()" class="w-full bg-[var(--bg-btn-surface)] hover:bg-[var(--bg-btn-hover)] text-[var(--text-sub)] font-bold py-2.5 rounded-xl text-[11px] transition-finez active:scale-95">← 닫기</button>
                     </div>
 
-                    <!-- 분기 선택 화면 -->
                     <div id="modal-branch-section" class="hidden text-center py-4 px-2 space-y-4">
                         <div class="w-12 h-12 bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] text-[var(--color-gold)] rounded-full flex items-center justify-center mx-auto text-xl">🔓</div>
                         <div class="space-y-1 mb-2">
                             <p class="text-sm font-bold font-serif-title text-[var(--text-main)]">위치 인증 완료</p>
-                            <p class="text-xs text-emerald-400 font-bold" id="modal-gps-timer">✅ 위치 인증 완료됨 (계속 진행 가능)</p>
+                            <p class="text-xs text-emerald-400 font-bold" id="modal-gps-timer">✅ 위치 인증 완료됨 (진행 가능)</p>
                         </div>
                         <div class="grid grid-cols-1 gap-2.5 text-left">
                             <button id="branch-goblin-btn" onclick="goToGoblinSection()" class="hidden w-full bg-gradient-to-r from-[var(--color-red)] via-[var(--color-gold)] to-[var(--color-red)] text-[var(--text-on-gold)] font-extrabold py-3.5 px-4 rounded-xl text-xs flex justify-between items-center shadow-md transition-finez treasure-glow mb-1 active:scale-95">
@@ -524,7 +521,6 @@
                         </div>
                     </div>
 
-                    <!-- 수상한 인물 대기 화면 -->
                     <div id="modal-goblin-section" class="hidden text-center py-6 px-2 space-y-6">
                         <div class="w-16 h-16 bg-[var(--bg-btn-surface)] border border-[var(--border-gold-alpha)] rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">👣</div>
                         <div class="space-y-1.5">
@@ -538,7 +534,6 @@
                         <button onclick="showChoiceSection()" class="w-full bg-[var(--bg-btn-surface)] hover:bg-[var(--bg-btn-hover)] text-[var(--text-sub)] font-bold py-3 rounded-xl text-[11px] transition-finez">← 미션 메뉴로 돌아가기</button>
                     </div>
 
-                    <!-- 퀴즈 풀이 섹션 -->
                     <div id="modal-quiz-section" class="hidden space-y-4">
                         <div class="bg-[var(--bg-header)] border border-[var(--border-gold-alpha)] p-4 rounded-2xl shadow-sm">
                             <div class="flex justify-between items-center mb-2">
@@ -557,7 +552,6 @@
                         <div id="modal-options" class="space-y-2"></div>
                     </div>
 
-                    <!-- 사진 인증 섹션 -->
                     <div id="modal-photo-section" class="hidden space-y-4 flex flex-col items-center">
                         <div class="text-left w-full mb-1 bg-[var(--bg-card)] p-4 rounded-xl border border-[var(--border-gold-alpha)] shadow-sm">
                             <p class="text-[var(--color-gold)] text-[11px] font-bold font-serif-title uppercase tracking-wider mb-1.5">④ [인증샷과 낙관 찍기] (선택)</p>
@@ -579,7 +573,6 @@
                         </div>
                     </div>
 
-                    <!-- 가챠 섹션 -->
                     <div id="modal-gacha-section" class="hidden w-full text-center py-6 space-y-5">
                         <div class="text-xs font-bold text-[var(--color-gold)] font-serif-title tracking-wider animate-bounce">💮 낙관(落款) 가치 판정 중 💮</div>
                         <div class="bg-[var(--bg-overlay)] text-[var(--text-main)] rounded-2xl py-8 px-4 font-mono border-2 border-[var(--border-gold-alpha)] shadow-inner overflow-hidden relative">
@@ -601,7 +594,6 @@
         function safeSetItem(key, value) { try { localStorage.setItem(key, value); } catch(e) {} }
         function safeRemoveItem(key) { try { localStorage.removeItem(key); } catch(e) {} }
 
-        // 1. Firebase 구성
         let db = null;
         try {
             const firebaseConfig = {
@@ -769,7 +761,7 @@
             return 1; 
         }
 
-        let currentSelectedDay = getInitialDayByKST();
+        let currentSelectedDay = 1; // 현장 안전을 위해 1일차 기본 강제 고정
 
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
@@ -779,7 +771,7 @@
         }
 
         function updateThemeUI(isLight) {
-            document.querySelectorAll('.theme-toggle-icon').forEach(el => el.innerText = isLight ? '☀️️' : '🌙');
+            document.querySelectorAll('.theme-toggle-icon').forEach(el => el.innerText = isLight ? '☀️' : '🌙');
             document.querySelectorAll('.theme-toggle-text').forEach(el => el.innerText = isLight ? '라이트' : '다크');
         }
 
@@ -793,12 +785,7 @@
                 if (localData) {
                     try { 
                         usersDB = JSON.parse(localData); 
-                        Object.keys(usersDB).forEach(key => {
-                            let u = usersDB[key];
-                            if (!u.solved) u.solved = [];
-                            else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
-                            if (!u.gpsVerified) u.gpsVerified = {}; 
-                        });
+                        sanitizeAllUsers();
                     } catch(e) { usersDB = JSON.parse(JSON.stringify(defaultUsersDB)); }
                 } else {
                     usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
@@ -822,20 +809,7 @@
 
                     if (snapshot.exists()) {
                         usersDB = snapshot.val();
-                        Object.keys(usersDB).forEach(key => {
-                            let u = usersDB[key];
-                            if (!u.failedAttempts) u.failedAttempts = {};
-                            if (!u.photoStatus) u.photoStatus = {};
-                            if (!u.photoData) u.photoData = {};
-                            if (!u.photoVerified) u.photoVerified = {};
-                            if (!u.bonusHistory) u.bonusHistory = {}; 
-                            if (!u.gpsVerified) u.gpsVerified = {}; 
-                            
-                            if (!u.solved) u.solved = [];
-                            else if (!Array.isArray(u.solved)) u.solved = Object.values(u.solved);
-                            
-                            if (u.score === undefined) u.score = 0;
-                        });
+                        sanitizeAllUsers();
                     } else {
                         usersDB = JSON.parse(JSON.stringify(defaultUsersDB));
                         db.ref('usersDB').set(usersDB);
@@ -849,7 +823,8 @@
                         else if (currentToken && usersDB[currentToken]) {
                             currentUser = usersDB[currentToken];
                             updateHeaderUI();
-                            if(currentSelectedDay) { renderQuizList(); renderScheduleList(); }
+                            renderQuizList(); 
+                            renderScheduleList();
                         }
                         renderLeaderboard();
                     }
@@ -864,7 +839,7 @@
                     safeSetItem("global_mock_location", isMocked ? "true" : "false");
                     const st2 = document.getElementById("admin-mock-location-toggle");
                     if (st2) st2.checked = isMocked;
-                    if (!isAdmin && currentUser && currentSelectedDay) renderQuizList();
+                    if (!isAdmin && currentUser) renderQuizList();
                 });
 
                 db.ref('global_nagan_locked').on('value', (snapshot) => {
@@ -873,7 +848,7 @@
                     safeSetItem("global_nagan_locked", isLocked ? "true" : "false");
                     const st3 = document.getElementById("admin-nagan-lock-toggle");
                     if (st3) st3.checked = isLocked;
-                    if (!isAdmin && currentUser && currentSelectedDay) renderQuizList();
+                    if (!isAdmin && currentUser) renderQuizList();
                 });
             } catch (err) {
                 clearTimeout(dbTimeout);
@@ -881,7 +856,29 @@
             }
         }
 
-        // 🚨 per-team 업데이트로 다른 조 데이터 덮어쓰기 완전 방지
+        // Firebase 배열 깨짐 및 null 누락 완벽 복구 함수
+        function sanitizeAllUsers() {
+            Object.keys(usersDB).forEach(key => {
+                let u = usersDB[key];
+                if (!u.failedAttempts) u.failedAttempts = {};
+                if (!u.photoStatus) u.photoStatus = {};
+                if (!u.photoData) u.photoData = {};
+                if (!u.photoVerified) u.photoVerified = {};
+                if (!u.bonusHistory) u.bonusHistory = {}; 
+                if (!u.gpsVerified) u.gpsVerified = {}; 
+                
+                if (!u.solved) {
+                    u.solved = [];
+                } else if (!Array.isArray(u.solved)) {
+                    u.solved = Object.values(u.solved).filter(v => typeof v === 'string');
+                } else {
+                    u.solved = u.solved.filter(v => typeof v === 'string');
+                }
+                
+                if (u.score === undefined || isNaN(u.score)) u.score = 0;
+            });
+        }
+
         function saveAndSync(specificToken) { 
             const targetToken = specificToken || currentToken;
             if(db && targetToken && usersDB[targetToken]) {
@@ -895,10 +892,11 @@
         function syncLocationSimulatorState(checked) { if(db) { try{ db.ref('global_mock_location').set(checked); } catch(e){} } }
         function syncNaganLockState(checked) { if(db) { try{ db.ref('global_nagan_locked').set(checked); } catch(e){} } }
 
-        // 🚨 버그 해결: 35분 제한을 24시간(86,400,000ms)으로 확장하여 이동 중 리셋되는 현상 완전 방지!
+        // GPS 만료로 화면 잠기는 현상 전면 차단 (하루 동안 유지)
         function checkGpsSessionValid(courseId) {
             if (safeGetItem("global_mock_location") === "true") return true; 
-            if (!currentUser || !currentUser.gpsVerified) return false;
+            if (!currentUser) return false;
+            if (!currentUser.gpsVerified) currentUser.gpsVerified = {};
             const timestamp = currentUser.gpsVerified[courseId];
             if (!timestamp || isNaN(timestamp)) return false; 
             return (Date.now() - Number(timestamp)) < 86400000; 
@@ -910,7 +908,6 @@
             hideAllScreens(); document.getElementById("auth-screen").classList.remove("hidden");
         }
 
-        // 🚨 4조 등 대소문자/공백 완벽 방어 로그인 로직
         function handleInAppAuth(rawToken) {
             if (!rawToken) return;
             const token = rawToken.toString().trim().toLowerCase();
@@ -930,7 +927,6 @@
                 return;
             }
 
-            // 정확한 키 매핑 보장
             let matchedToken = Object.keys(usersDB).find(k => k.toLowerCase() === token);
 
             if (matchedToken) {
@@ -939,6 +935,7 @@
                 isAdmin = false;
                 currentToken = matchedToken;
                 currentUser = usersDB[matchedToken];
+                sanitizeAllUsers();
 
                 if (!currentUser.isConfigured) {
                     hideAllScreens();
@@ -1099,16 +1096,25 @@
             document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("app-screen").classList.add("hidden");
             document.getElementById("admin-screen").classList.add("hidden"); document.getElementById("goblin-result-screen").classList.add("hidden");
         }
+
         function triggerLoadingSequence() {
             hideAllScreens(); document.getElementById("loading-screen").classList.remove("hidden");
-            setTimeout(() => { hideAllScreens(); document.getElementById("app-screen").classList.remove("hidden"); updateHeaderUI(); switchDay(currentSelectedDay); renderLeaderboard(); }, 800);
+            setTimeout(() => { 
+                hideAllScreens(); 
+                document.getElementById("app-screen").classList.remove("hidden"); 
+                updateHeaderUI(); 
+                switchDay(currentSelectedDay); 
+                renderLeaderboard(); 
+            }, 500);
         }
+
         function saveTeamSetup() {
             const teamInput = document.getElementById("setup-team-input").value.trim();
             if (!teamInput) return alert("우리 조 이름을 입력해 주세요!"); 
             currentUser.team = teamInput; currentUser.members = document.getElementById("setup-members-input").value.trim() || "등록된 조원 없음";
             currentUser.isConfigured = true; usersDB[currentToken] = currentUser; saveAndSync(currentToken); triggerLoadingSequence();
         }
+
         function updateHeaderUI() {
             if(!currentUser) return;
             document.getElementById("user-info-text").innerText = currentUser.team;
@@ -1167,7 +1173,7 @@
             } else {
                 safeSetItem('global_mock_location', "false");
                 safeSetItem('global_nagan_locked', "false");
-                alert(currentResetType === 'progress' ? "✅ 진행 상황이 초기화되었습니다. (오프라인 모드)" : "✅ 전체 데이터가 완벽하게 초기화되었습니다. (오프라인 모드)");
+                alert(currentResetType === 'progress' ? "✅ 진행 상황이 초기화되었습니다." : "✅ 전체 데이터가 완벽하게 초기화되었습니다.");
                 closeResetModal();
                 window.location.reload();
             }
@@ -1220,14 +1226,7 @@
                 sBtn.classList.replace("text-[var(--text-disabled)]", "text-[var(--color-gold)]");
                 sCon.classList.remove("hidden");
                 daySelector.classList.remove("hidden");
-
-                const todayKST = getInitialDayByKST();
-                if (currentSelectedDay !== todayKST) {
-                    switchDay(todayKST);
-                } else {
-                    renderScheduleList();
-                }
-
+                renderScheduleList();
                 scheduleRefreshInterval = setInterval(renderScheduleList, 60000); 
             }
         }
@@ -1249,7 +1248,6 @@
 
         function getScheduleState(day, timeStr) {
             if (!timeStr || timeStr === "안내") return 'future';
-
             const dates = { 1: "2026/09/30", 2: "2026/10/01", 3: "2026/10/02" };
             const targetDateStr = dates[day];
             if (!targetDateStr) return 'future';
@@ -1262,7 +1260,6 @@
 
             let start = parts[0].trim();
             if(start.length === 4) start = "0" + start;
-            
             let end = parts[1].trim();
             if (end === "") end = "23:59";
             if (end.length === 4) end = "0" + end;
@@ -1296,10 +1293,8 @@
             }
 
             let html = `<div class="relative border-l-2 border-[var(--border-gold-alpha)] ml-2.5 space-y-6 pb-2 mt-4">`;
-            
             daySchedule.forEach(item => {
                 const state = getScheduleState(currentSelectedDay, item.time);
-                
                 let dotHtml = '';
                 let timeColor = '';
                 let titleColor = '';
@@ -1337,7 +1332,8 @@
         }
 
         function renderQuizList() {
-            const container = document.getElementById("quiz-list"); container.innerHTML = "";
+            const container = document.getElementById("quiz-list"); 
+            container.innerHTML = "";
             let isNaganLocked = safeGetItem("global_nagan_locked") === "true"; 
             
             Object.keys(coursesDB).forEach(courseId => {
@@ -1349,6 +1345,7 @@
                 
                 let solvedCount = 0, lockedCount = 0;
                 let solvedArr = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+                
                 subQuizzes.forEach(q => { 
                     if (solvedArr.includes(q.id)) solvedCount++; 
                     if (((currentUser.failedAttempts || {})[q.id] || 0) >= 3) lockedCount++; 
@@ -1618,21 +1615,7 @@
 
         function startGpsTimerUpdate(courseId) {
             const timerText = document.getElementById("modal-gps-timer");
-            function updateText() {
-                if(safeGetItem("global_mock_location") === "true") { timerText.innerText = "🚩 시뮬레이터 적용 상태 (시간 무제한)"; return; }
-                if(!currentUser || !currentUser.gpsVerified) return;
-                
-                const startStamp = currentUser.gpsVerified[courseId]; 
-                if(!startStamp) return;
-                
-                const remaining = 86400000 - (Date.now() - startStamp); 
-                if (remaining <= 0) {
-                    clearInterval(timerInterval); alert("⏳ 인증 유효 시간이 만료되었습니다."); closeModal(); renderQuizList();
-                } else {
-                    timerText.innerText = `✅ 위치 인증 완료됨 (계속 진행 가능)`;
-                }
-            }
-            updateText(); timerInterval = setInterval(updateText, 5000);
+            timerText.innerText = `✅ 위치 인증 완료됨 (진행 가능)`;
         }
 
         function closeModal() {
@@ -1756,6 +1739,7 @@
             returnBtn.innerText = "↩ 미션 선택으로 돌아가기"; returnBtn.onclick = showChoiceSection; optionsContainer.appendChild(returnBtn);
         }
 
+        // 🚨 정답 제출 시 이전 문제 목록 소멸 방지 (중복 제거 Set 병합)
         function handleAnswerSubmit(selected, btnElement) {
             if (isQuizProcessing) return; 
             isQuizProcessing = true; 
@@ -1779,8 +1763,14 @@
                 btnElement.className = "w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
                 btnElement.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답입니다!<div class="text-[11px] text-emerald-400 mt-1 font-medium">${selected}</div></span> <span class="text-emerald-400 font-black text-lg">+${earnedPoints}P</span>`;
                 
-                if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
-                currentUser.score += earnedPoints; currentUser.solved.push(qId); usersDB[currentToken] = currentUser; saveAndSync(currentToken);
+                let curSolved = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+                let solvedSet = new Set(curSolved);
+                solvedSet.add(qId);
+                currentUser.solved = Array.from(solvedSet);
+
+                currentUser.score += earnedPoints; 
+                usersDB[currentToken] = currentUser; 
+                saveAndSync(currentToken);
                 pendingQuizQueue.shift();
                 
                 setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
@@ -1855,8 +1845,8 @@
                 optionButtons.forEach(b => {
                     const opt = b.dataset.opt;
                     if (correctAnswers.includes(opt)) {
-                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-[var(--text-main)] flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
-                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-400 mt-1 font-medium">${opt}</div></span>`;
+                        b.className = "multiple-opt-btn w-full text-left p-4 border-2 border-emerald-500 bg-emerald-500/10 rounded-xl text-xs font-bold text-emerald-400 flex justify-between items-center z-10 relative mb-2 scale-105 transition-all";
+                        b.innerHTML = `<span class="flex-1 leading-relaxed pr-2 font-black">⭕ 정답!<div class="text-[10px] text-emerald-200 mt-1 font-medium">${opt}</div></span>`;
                     } else {
                         b.classList.add("opacity-40");
                     }
@@ -1868,8 +1858,12 @@
                 submitBtn.className = "w-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-black py-3.5 px-4 rounded-xl text-sm mt-2 mb-2 transition-all scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
                 submitBtn.innerHTML = `⭕ 정답입니다! <span class="ml-2 text-lg">+${earnedPoints}P</span>`;
 
-                if (!Array.isArray(currentUser.solved)) currentUser.solved = Object.values(currentUser.solved || {});
-                currentUser.score += earnedPoints; currentUser.solved.push(qId);
+                let curSolved = Array.isArray(currentUser.solved) ? currentUser.solved : Object.values(currentUser.solved || {});
+                let solvedSet = new Set(curSolved);
+                solvedSet.add(qId);
+                currentUser.solved = Array.from(solvedSet);
+
+                currentUser.score += earnedPoints; 
                 usersDB[currentToken] = currentUser; saveAndSync(currentToken); pendingQuizQueue.shift();
 
                 setTimeout(() => { loadNextQuestionFromQueue(); }, 2400); 
